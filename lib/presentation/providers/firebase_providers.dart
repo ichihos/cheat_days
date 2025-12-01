@@ -4,9 +4,15 @@ import '../../data/datasources/notification_service.dart';
 import '../../data/repositories/firebase_cheat_day_repository.dart';
 import '../../data/repositories/firebase_cheat_memo_repository.dart';
 import '../../data/repositories/firebase_comment_repository.dart';
+import '../../data/repositories/firebase_wishlist_repository.dart';
+import '../../data/repositories/firebase_recipe_repository.dart';
+import '../../data/repositories/firebase_restaurant_repository.dart';
 import '../../domain/repositories/cheat_day_repository.dart';
 import '../../domain/repositories/cheat_memo_repository.dart';
 import '../../domain/repositories/comment_repository.dart';
+import '../../domain/repositories/wishlist_repository.dart';
+import '../../domain/repositories/recipe_repository.dart';
+import '../../domain/repositories/restaurant_repository.dart';
 import 'auth_provider.dart';
 
 final firestoreServiceProvider = Provider<FirestoreService>((ref) {
@@ -39,4 +45,19 @@ final firebaseCheatMemoRepositoryProvider = Provider<CheatMemoRepository>((ref) 
 final commentRepositoryProvider = Provider<CommentRepository>((ref) {
   final firestoreService = ref.watch(firestoreServiceProvider);
   return FirebaseCommentRepository(firestoreService);
+});
+
+final firebaseWishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
+  final firestoreService = ref.watch(firestoreServiceProvider);
+  return FirebaseWishlistRepository(firestoreService);
+});
+
+final recipeRepositoryProvider = Provider<RecipeRepository>((ref) {
+  final firestoreService = ref.watch(firestoreServiceProvider);
+  return FirebaseRecipeRepository(firestoreService);
+});
+
+final restaurantRepositoryProvider = Provider<RestaurantRepository>((ref) {
+  final firestoreService = ref.watch(firestoreServiceProvider);
+  return FirebaseRestaurantRepository(firestoreService);
 });

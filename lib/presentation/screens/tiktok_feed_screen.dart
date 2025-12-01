@@ -4,9 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../domain/entities/cheat_day.dart';
+import '../../domain/entities/recipe.dart';
+import '../../domain/entities/restaurant.dart';
 import '../providers/cheat_day_provider.dart';
 import '../providers/firebase_providers.dart';
 import '../providers/auth_provider.dart';
+import '../providers/wishlist_provider.dart';
 import '../widgets/media_player_widget.dart';
 
 class TikTokFeedScreen extends ConsumerStatefulWidget {
@@ -329,7 +332,7 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-class _DetailsPanel extends StatelessWidget {
+class _DetailsPanel extends ConsumerWidget {
   final CheatDay cheatDay;
   final VoidCallback onClose;
 
@@ -339,7 +342,7 @@ class _DetailsPanel extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
       decoration: const BoxDecoration(
@@ -377,14 +380,10 @@ class _DetailsPanel extends StatelessWidget {
                     child: TabBarView(
                       children: [
                         // レシピタブ
-                        cheatDay.hasRecipe
-                            ? const Center(child: Text('レシピ情報'))
-                            : const Center(child: Text('レシピ情報なし')),
+                        _RecipeTab(cheatDay: cheatDay),
 
                         // お店タブ
-                        cheatDay.hasRestaurant
-                            ? const Center(child: Text('お店情報'))
-                            : const Center(child: Text('お店情報なし')),
+                        _RestaurantTab(cheatDay: cheatDay),
                       ],
                     ),
                   ),
@@ -395,5 +394,177 @@ class _DetailsPanel extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _RecipeTab extends ConsumerWidget {
+  final CheatDay cheatDay;
+
+  const _RecipeTab({required this.cheatDay});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(currentUserProvider).value;
+
+    if (!cheatDay.hasRecipe) {
+      return const Center(child: Text('レシピ情報なし'));
+    }
+
+    // TODO: 実際のレシピデータを取得して表示
+    // 現在はダミーデータで表示
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'レシピ情報',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          const Expanded(
+            child: Center(child: Text('レシピの詳細情報が表示されます')),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: currentUser != null
+                  ? () => _saveRecipeToWishlist(context, ref, currentUser.uid)
+                  : null,
+              icon: const Icon(Icons.bookmark_add),
+              label: const Text('レシピを保存リストに追加'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveRecipeToWishlist(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) async {
+    try {
+      // TODO: 実際のレシピデータを使用
+      // 現在はダミーデータで保存
+      final recipe = Recipe(
+        id: '${cheatDay.id}_recipe',
+        cheatDayId: cheatDay.id,
+        title: cheatDay.title,
+        ingredients: ['材料1', '材料2'],
+        steps: ['手順1', '手順2'],
+        cookingTimeMinutes: 30,
+        servings: 2,
+      );
+
+      await ref.read(wishlistNotifierProvider.notifier).addRecipeToWishlist(
+            recipe: recipe,
+            thumbnailUrl: cheatDay.mediaPath,
+          );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('レシピを保存リストに追加しました')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラー: $e')),
+        );
+      }
+    }
+  }
+}
+
+class _RestaurantTab extends ConsumerWidget {
+  final CheatDay cheatDay;
+
+  const _RestaurantTab({required this.cheatDay});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(currentUserProvider).value;
+
+    if (!cheatDay.hasRestaurant) {
+      return const Center(child: Text('お店情報なし'));
+    }
+
+    // TODO: 実際のレストランデータを取得して表示
+    // 現在はダミーデータで表示
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'お店情報',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          const Expanded(
+            child: Center(child: Text('お店の詳細情報が表示されます')),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: currentUser != null
+                  ? () => _saveRestaurantToWishlist(context, ref, currentUser.uid)
+                  : null,
+              icon: const Icon(Icons.bookmark_add),
+              label: const Text('お店を保存リストに追加'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveRestaurantToWishlist(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) async {
+    try {
+      // TODO: 実際のレストランデータを使用
+      // 現在はダミーデータで保存
+      final restaurant = Restaurant(
+        id: '${cheatDay.id}_restaurant',
+        cheatDayId: cheatDay.id,
+        name: cheatDay.title,
+        address: '住所情報',
+        tags: [],
+      );
+
+      await ref.read(wishlistNotifierProvider.notifier).addRestaurantToWishlist(
+            restaurant: restaurant,
+            thumbnailUrl: cheatDay.mediaPath,
+          );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('お店を保存リストに追加しました')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラー: $e')),
+        );
+      }
+    }
   }
 }

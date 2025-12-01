@@ -4,6 +4,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import '../models/cheat_day_model.dart';
 import '../models/cheat_memo_model.dart';
 import '../models/comment_model.dart';
+import '../models/recipe_model.dart';
+import '../models/restaurant_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -194,5 +196,100 @@ class FirestoreService {
         .collection('memos')
         .doc(memoId)
         .delete();
+  }
+
+  // Wishlist (User-specific)
+  Future<List<dynamic>> getUserWishlist(String userId) async {
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('wishlist')
+        .orderBy('createdAt', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
+  }
+
+  Future<void> addWishlistItem(String userId, dynamic wishlistItem) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('wishlist')
+        .doc(wishlistItem.id)
+        .set(wishlistItem.toJson());
+  }
+
+  Future<void> updateWishlistItem(String userId, dynamic wishlistItem) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('wishlist')
+        .doc(wishlistItem.id)
+        .update(wishlistItem.toJson());
+  }
+
+  Future<void> deleteWishlistItem(String userId, String wishlistItemId) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('wishlist')
+        .doc(wishlistItemId)
+        .delete();
+  }
+
+  // Recipes
+  Future<RecipeModel?> getRecipeByCheatDayId(String cheatDayId) async {
+    final snapshot = await _firestore
+        .collection('recipes')
+        .where('cheatDayId', isEqualTo: cheatDayId)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+
+    final doc = snapshot.docs.first;
+    return RecipeModel.fromJson({...doc.data(), 'id': doc.id});
+  }
+
+  Future<void> addRecipe(RecipeModel recipe) async {
+    await _firestore.collection('recipes').doc(recipe.id).set(recipe.toJson());
+  }
+
+  Future<void> updateRecipe(RecipeModel recipe) async {
+    await _firestore.collection('recipes').doc(recipe.id).update(recipe.toJson());
+  }
+
+  Future<void> deleteRecipe(String id) async {
+    await _firestore.collection('recipes').doc(id).delete();
+  }
+
+  // Restaurants
+  Future<RestaurantModel?> getRestaurantByCheatDayId(String cheatDayId) async {
+    final snapshot = await _firestore
+        .collection('restaurants')
+        .where('cheatDayId', isEqualTo: cheatDayId)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+
+    final doc = snapshot.docs.first;
+    return RestaurantModel.fromJson({...doc.data(), 'id': doc.id});
+  }
+
+  Future<void> addRestaurant(RestaurantModel restaurant) async {
+    await _firestore.collection('restaurants').doc(restaurant.id).set(restaurant.toJson());
+  }
+
+  Future<void> updateRestaurant(RestaurantModel restaurant) async {
+    await _firestore.collection('restaurants').doc(restaurant.id).update(restaurant.toJson());
+  }
+
+  Future<void> deleteRestaurant(String id) async {
+    await _firestore.collection('restaurants').doc(id).delete();
   }
 }
