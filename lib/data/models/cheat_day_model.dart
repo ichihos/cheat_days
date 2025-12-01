@@ -7,6 +7,12 @@ class CheatDayModel extends CheatDay {
     required super.description,
     required super.date,
     required super.userId,
+    required super.userName,
+    super.userPhotoUrl,
+    super.likesCount = 0,
+    super.commentsCount = 0,
+    super.likedBy = const [],
+    super.isPublic = true,
   });
 
   factory CheatDayModel.fromJson(Map<String, dynamic> json) {
@@ -16,6 +22,12 @@ class CheatDayModel extends CheatDay {
       description: json['description'] as String,
       date: DateTime.parse(json['date'] as String),
       userId: json['userId'] as String,
+      userName: json['userName'] as String,
+      userPhotoUrl: json['userPhotoUrl'] as String?,
+      likesCount: json['likesCount'] as int? ?? 0,
+      commentsCount: json['commentsCount'] as int? ?? 0,
+      likedBy: List<String>.from(json['likedBy'] ?? []),
+      isPublic: json['isPublic'] as bool? ?? true,
     );
   }
 
@@ -26,6 +38,12 @@ class CheatDayModel extends CheatDay {
       'description': description,
       'date': date.toIso8601String(),
       'userId': userId,
+      'userName': userName,
+      'userPhotoUrl': userPhotoUrl,
+      'likesCount': likesCount,
+      'commentsCount': commentsCount,
+      'likedBy': likedBy,
+      'isPublic': isPublic,
     };
   }
 
@@ -36,6 +54,12 @@ class CheatDayModel extends CheatDay {
       description: entity.description,
       date: entity.date,
       userId: entity.userId,
+      userName: entity.userName,
+      userPhotoUrl: entity.userPhotoUrl,
+      likesCount: entity.likesCount,
+      commentsCount: entity.commentsCount,
+      likedBy: entity.likedBy,
+      isPublic: entity.isPublic,
     );
   }
 }
