@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'slideshow_screen.dart';
+import 'tiktok_feed_screen.dart';
 import 'my_cheat_days_screen.dart';
 import 'calendar_screen.dart';
 import 'memo_screen.dart';
@@ -15,7 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const SlideshowScreen(),
+    const TikTokFeedScreen(),
     const MyCheatDaysScreen(),
     const CalendarScreen(),
     const MemoScreen(),
