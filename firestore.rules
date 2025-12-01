@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ヘルパー関数
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // CheatDays コレクション
+    match /cheatDays/{cheatDayId} {
+      // 公開されているチートデイは誰でも読める
+      allow read: if resource.data.isPublic == true || isOwner(resource.data.userId);
+
+      // 自分のチートデイのみ作成・更新・削除可能
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId);
+
+      // コメント サブコレクション
+      match /comments/{commentId} {
+        // コメントは誰でも読める
+        allow read: if true;
+
+        // ログインユーザーのみコメント作成可能
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+
+        // 自分のコメントのみ削除可能
+        allow delete: if isOwner(resource.data.userId);
+      }
+    }
+
+    // Recipes コレクション
+    match /recipes/{recipeId} {
+      // レシピは誰でも読める
+      allow read: if true;
+
+      // ログインユーザーのみレシピ作成可能
+      allow create: if isSignedIn();
+
+      // 誰でも更新可能（コミュニティ編集を想定）
+      // より厳密な制御が必要な場合は、作成者のみに制限することも可能
+      allow update: if isSignedIn();
+
+      // 誰でも削除可能（管理者のみに制限する場合は別途実装が必要）
+      allow delete: if isSignedIn();
+    }
+
+    // Restaurants コレクション
+    match /restaurants/{restaurantId} {
+      // レストラン情報は誰でも読める
+      allow read: if true;
+
+      // ログインユーザーのみレストラン作成可能
+      allow create: if isSignedIn();
+
+      // 誰でも更新可能（コミュニティ編集を想定）
+      allow update: if isSignedIn();
+
+      // 誰でも削除可能
+      allow delete: if isSignedIn();
+    }
+
+    // Users コレクション
+    match /users/{userId} {
+      // 自分のユーザー情報のみ読み書き可能
+      allow read, write: if isOwner(userId);
+
+      // Memos サブコレクション
+      match /memos/{memoId} {
+        // 自分のメモのみ読み書き可能
+        allow read, write: if isOwner(userId);
+      }
+
+      // Wishlist サブコレクション
+      match /wishlist/{wishlistItemId} {
+        // 自分のウィッシュリストのみ読み書き可能
+        allow read, write: if isOwner(userId);
+      }
+    }
+  }
+}
