@@ -10,6 +10,7 @@ import '../providers/cheat_day_provider.dart';
 import '../providers/firebase_providers.dart';
 import '../providers/auth_provider.dart';
 import '../providers/wishlist_provider.dart';
+import '../providers/comment_provider.dart';
 import '../widgets/media_player_widget.dart';
 
 class TikTokFeedScreen extends ConsumerStatefulWidget {
@@ -283,8 +284,12 @@ class _FeedItemState extends State<_FeedItem> {
   }
 
   void _showComments(BuildContext context) {
-    // コメント画面を表示
-    // TODO: コメント機能の実装
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _CommentsSheet(cheatDay: widget.cheatDay),
+    );
   }
 
   String _formatCount(int count) {
@@ -564,6 +569,304 @@ class _RestaurantTab extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('エラー: $e')),
         );
+      }
+    }
+  }
+}
+
+class _CommentsSheet extends ConsumerStatefulWidget {
+  final CheatDay cheatDay;
+
+  const _CommentsSheet({required this.cheatDay});
+
+  @override
+  ConsumerState<_CommentsSheet> createState() => _CommentsSheetState();
+}
+
+class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
+  final _commentController = TextEditingController();
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final commentsAsync = ref.watch(commentsProvider(widget.cheatDay.id));
+    final currentUser = ref.watch(currentUserProvider).value;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // ハンドル
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // ヘッダー
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                const Text(
+                  'コメント',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 8),
+                commentsAsync.when(
+                  data: (comments) => Text(
+                    '${comments.length}',
+                    style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                  ),
+                  loading: () => const SizedBox(),
+                  error: (_, __) => const SizedBox(),
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(),
+
+          // コメント一覧
+          Expanded(
+            child: commentsAsync.when(
+              data: (comments) {
+                if (comments.isEmpty) {
+                  return const Center(
+                    child: Text('まだコメントがありません\n最初のコメントを投稿しよう！'),
+                  );
+                }
+
+                return ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemCount: comments.length,
+                  itemBuilder: (context, index) {
+                    final comment = comments[index];
+                    final isOwner = currentUser?.uid == comment.userId;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // アバター
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundImage: comment.userPhotoUrl != null
+                                ? NetworkImage(comment.userPhotoUrl!)
+                                : null,
+                            child: comment.userPhotoUrl == null
+                                ? const Icon(Icons.person, size: 18)
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+
+                          // コメント内容
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      comment.userName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _formatTime(comment.createdAt),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  comment.content,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // 削除ボタン（自分のコメントのみ）
+                          if (isOwner)
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 20),
+                              color: Colors.grey.shade600,
+                              onPressed: () => _deleteComment(comment.id),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, _) => Center(child: Text('エラー: $error')),
+            ),
+          ),
+
+          const Divider(height: 1),
+
+          // コメント入力欄
+          SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 8,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 8,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _commentController,
+                      decoration: InputDecoration(
+                        hintText: 'コメントを入力...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                      ),
+                      maxLines: null,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _postComment(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: _postComment,
+                    icon: const Icon(Icons.send),
+                    color: Colors.orange,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) {
+      return 'たった今';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}分前';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}時間前';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}日前';
+    } else {
+      return '${dateTime.month}/${dateTime.day}';
+    }
+  }
+
+  Future<void> _postComment() async {
+    final content = _commentController.text.trim();
+    if (content.isEmpty) return;
+
+    final currentUser = ref.read(currentUserProvider).value;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ログインしてください')),
+      );
+      return;
+    }
+
+    try {
+      await ref.read(commentsProvider(widget.cheatDay.id).notifier).addComment(
+            content,
+            currentUser.uid,
+            currentUser.displayName ?? 'Unknown',
+            currentUser.photoURL,
+          );
+
+      _commentController.clear();
+
+      // スクロールを最下部に
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラー: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteComment(String commentId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('コメントを削除'),
+        content: const Text('このコメントを削除しますか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('削除', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await ref
+            .read(commentsProvider(widget.cheatDay.id).notifier)
+            .deleteComment(commentId);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('コメントを削除しました')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('エラー: $e')),
+          );
+        }
       }
     }
   }
