@@ -1,0 +1,365 @@
+Analyzing cheat_days...                                         
+
+  error • The element type 'TikTokFeedScreen' can't be assigned to the list type 'Widget' • lib/presentation/screens/home_screen.dart:21:5 • list_element_type_not_assignable
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:13:32 • extends_non_class
+  error • No associated named super constructor parameter • lib/presentation/screens/tiktok_feed_screen.dart:14:33 • super_formal_parameter_without_associated_named
+  error • Undefined class 'ConsumerState' • lib/presentation/screens/tiktok_feed_screen.dart:17:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:17:35 • override_on_non_overriding_member
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:20:38 • extends_non_class
+  error • Undefined class 'PageController' • lib/presentation/screens/tiktok_feed_screen.dart:21:9 • undefined_class
+  error • The method 'PageController' isn't defined for the type '_TikTokFeedScreenState' • lib/presentation/screens/tiktok_feed_screen.dart:21:42 • undefined_method
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:25:8 • override_on_non_overriding_member
+  error • The method 'dispose' isn't defined in a superclass of '_TikTokFeedScreenState' • lib/presentation/screens/tiktok_feed_screen.dart:27:11 • undefined_super_member
+  error • Undefined class 'Widget' • lib/presentation/screens/tiktok_feed_screen.dart:31:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:31:10 • override_on_non_overriding_member
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:31:16 • undefined_class
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:32:28 • undefined_identifier
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:33:25 • undefined_identifier
+  error • The method 'Scaffold' isn't defined for the type '_TikTokFeedScreenState' • lib/presentation/screens/tiktok_feed_screen.dart:35:12 • undefined_method
+  error • The name 'Center' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:39:26 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_TikTokFeedScreenState' • lib/presentation/screens/tiktok_feed_screen.dart:39:40 • undefined_method
+  error • Undefined name 'PageView' • lib/presentation/screens/tiktok_feed_screen.dart:42:18 • undefined_identifier
+  error • Undefined name 'Axis' • lib/presentation/screens/tiktok_feed_screen.dart:44:30 • undefined_identifier
+  error • The method 'setState' isn't defined for the type '_TikTokFeedScreenState' • lib/presentation/screens/tiktok_feed_screen.dart:46:15 • undefined_method
+  error • The name 'Center' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:63:30 • creation_with_non_type
+  error • The method 'CircularProgressIndicator' isn't defined for the type '_TikTokFeedScreenState' • lib/presentation/screens/tiktok_feed_screen.dart:63:44 • undefined_method
+  error • The method 'Center' isn't defined for the type '_TikTokFeedScreenState' • lib/presentation/screens/tiktok_feed_screen.dart:64:34 • undefined_method
+  error • The method 'Text' isn't defined for the type '_TikTokFeedScreenState' • lib/presentation/screens/tiktok_feed_screen.dart:64:48 • undefined_method
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:70:25 • undefined_identifier
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:73:24 • undefined_identifier
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:77:5 • undefined_identifier
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:87:24 • undefined_identifier
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:89:5 • undefined_identifier
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:93:25 • extends_non_class
+  error • Undefined class 'VoidCallback' • lib/presentation/screens/tiktok_feed_screen.dart:97:9 • undefined_class
+  error • Undefined class 'VoidCallback' • lib/presentation/screens/tiktok_feed_screen.dart:98:9 • undefined_class
+  error • Undefined class 'State' • lib/presentation/screens/tiktok_feed_screen.dart:109:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:109:20 • override_on_non_overriding_member
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:112:30 • extends_non_class
+  error • Undefined class 'Widget' • lib/presentation/screens/tiktok_feed_screen.dart:117:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:117:10 • override_on_non_overriding_member
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:117:16 • undefined_class
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:118:21 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:118:54 • undefined_identifier
+  error • The method 'GestureDetector' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:120:12 • undefined_method
+  error • The method 'setState' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:122:9 • undefined_method
+  error • The method 'Stack' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:126:14 • undefined_method
+  error • Undefined name 'StackFit' • lib/presentation/screens/tiktok_feed_screen.dart:127:14 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:131:23 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:132:23 • undefined_identifier
+  error • Undefined name 'Positioned' • lib/presentation/screens/tiktok_feed_screen.dart:137:11 • undefined_identifier
+  error • The method 'Container' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:138:20 • undefined_method
+  error • The method 'BoxDecoration' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:139:27 • undefined_method
+  error • The method 'LinearGradient' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:140:27 • undefined_method
+  error • Undefined name 'Alignment' • lib/presentation/screens/tiktok_feed_screen.dart:141:26 • undefined_identifier
+  error • Undefined name 'Alignment' • lib/presentation/screens/tiktok_feed_screen.dart:142:24 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:144:21 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:145:21 • undefined_identifier
+  error • The method 'Positioned' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:154:11 • undefined_method
+  error • The method 'Column' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:157:20 • undefined_method
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:161:35 • undefined_identifier
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:161:52 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:162:39 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:163:36 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:163:49 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:164:26 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:166:23 • creation_with_non_type
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:170:25 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:171:39 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:174:23 • creation_with_non_type
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:178:25 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:179:39 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:180:26 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:182:23 • creation_with_non_type
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:185:21 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:185:50 • undefined_identifier
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:187:27 • undefined_identifier
+  error • The method 'setState' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:190:23 • undefined_method
+  error • The method 'Positioned' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:200:11 • undefined_method
+  error • The method 'Column' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:204:20 • undefined_method
+  error • Undefined name 'CrossAxisAlignment' • lib/presentation/screens/tiktok_feed_screen.dart:205:35 • undefined_identifier
+  error • Undefined name 'MainAxisSize' • lib/presentation/screens/tiktok_feed_screen.dart:206:29 • undefined_identifier
+  error • The method 'Row' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:209:17 • undefined_method
+  error • The method 'CircleAvatar' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:211:21 • undefined_method
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:214:27 • undefined_identifier
+  error • The method 'NetworkImage' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:215:33 • undefined_method
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:215:46 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:218:27 • undefined_identifier
+  error • The name 'Icon' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:219:39 • creation_with_non_type
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:219:44 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:222:27 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:223:21 • undefined_method
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:224:23 • undefined_identifier
+  error • The name 'TextStyle' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:225:36 • creation_with_non_type
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:226:32 • undefined_identifier
+  error • Undefined name 'FontWeight' • lib/presentation/screens/tiktok_feed_screen.dart:227:37 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:233:23 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:236:17 • undefined_method
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:237:19 • undefined_identifier
+  error • The name 'TextStyle' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:238:32 • creation_with_non_type
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:239:28 • undefined_identifier
+  error • Undefined name 'FontWeight' • lib/presentation/screens/tiktok_feed_screen.dart:241:33 • undefined_identifier
+  error • Undefined name 'TextOverflow' • lib/presentation/screens/tiktok_feed_screen.dart:244:29 • undefined_identifier
+  error • The method 'Positioned' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:252:13 • undefined_method
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:257:27 • undefined_identifier
+  error • The method 'setState' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:259:19 • undefined_method
+  error • The name 'Center' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:268:19 • creation_with_non_type
+  error • The method 'Icon' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:269:22 • undefined_method
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:269:27 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:269:62 • undefined_identifier
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:276:22 • undefined_class
+  error • The method 'showModalBottomSheet' isn't defined for the type '_FeedItemState' • lib/presentation/screens/tiktok_feed_screen.dart:277:5 • undefined_method
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:280:24 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:281:54 • undefined_identifier
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:295:29 • extends_non_class
+  error • Undefined class 'IconData' • lib/presentation/screens/tiktok_feed_screen.dart:296:9 • undefined_class
+  error • Undefined class 'Color' • lib/presentation/screens/tiktok_feed_screen.dart:298:9 • undefined_class
+  error • Undefined class 'VoidCallback' • lib/presentation/screens/tiktok_feed_screen.dart:299:9 • undefined_class
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:304:18 • undefined_identifier
+  error • Undefined class 'Widget' • lib/presentation/screens/tiktok_feed_screen.dart:309:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:309:10 • override_on_non_overriding_member
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:309:16 • undefined_class
+  error • The method 'GestureDetector' isn't defined for the type '_ActionButton' • lib/presentation/screens/tiktok_feed_screen.dart:310:12 • undefined_method
+  error • The method 'Column' isn't defined for the type '_ActionButton' • lib/presentation/screens/tiktok_feed_screen.dart:312:14 • undefined_method
+  error • The method 'Icon' isn't defined for the type '_ActionButton' • lib/presentation/screens/tiktok_feed_screen.dart:314:11 • undefined_method
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:315:17 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_ActionButton' • lib/presentation/screens/tiktok_feed_screen.dart:316:11 • undefined_method
+  error • The name 'TextStyle' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:318:26 • creation_with_non_type
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:319:22 • undefined_identifier
+  error • Undefined name 'FontWeight' • lib/presentation/screens/tiktok_feed_screen.dart:321:27 • undefined_identifier
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:330:29 • extends_non_class
+  error • Undefined class 'VoidCallback' • lib/presentation/screens/tiktok_feed_screen.dart:332:9 • undefined_class
+  error • Undefined class 'Widget' • lib/presentation/screens/tiktok_feed_screen.dart:337:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:337:10 • override_on_non_overriding_member
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:337:16 • undefined_class
+  error • Undefined class 'WidgetRef' • lib/presentation/screens/tiktok_feed_screen.dart:337:38 • undefined_class
+  error • The method 'Container' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:338:12 • undefined_method
+  error • Undefined name 'MediaQuery' • lib/presentation/screens/tiktok_feed_screen.dart:339:15 • undefined_identifier
+  error • The name 'BoxDecoration' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:340:25 • creation_with_non_type
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:341:16 • undefined_identifier
+  error • Undefined name 'BorderRadius' • lib/presentation/screens/tiktok_feed_screen.dart:342:23 • undefined_identifier
+  error • Undefined name 'Radius' • lib/presentation/screens/tiktok_feed_screen.dart:342:50 • undefined_identifier
+  error • The method 'Column' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:344:14 • undefined_method
+  error • The method 'Container' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:347:11 • undefined_method
+  error • The name 'symmetric' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:348:27 • creation_with_non_type
+  error • The method 'BoxDecoration' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:351:25 • undefined_method
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:352:22 • undefined_identifier
+  error • Undefined name 'BorderRadius' • lib/presentation/screens/tiktok_feed_screen.dart:353:29 • undefined_identifier
+  error • The method 'Expanded' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:358:11 • undefined_method
+  error • The method 'DefaultTabController' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:359:20 • undefined_method
+  error • The method 'Column' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:361:22 • undefined_method
+  error • The method 'TabBar' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:363:19 • undefined_method
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:364:33 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:365:43 • undefined_identifier
+  error • The method 'Tab' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:366:34 • undefined_method
+  error • The values in a const list literal must be constants • lib/presentation/screens/tiktok_feed_screen.dart:366:34 • non_constant_list_element
+  error • The method 'Tab' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:366:52 • undefined_method
+  error • The values in a const list literal must be constants • lib/presentation/screens/tiktok_feed_screen.dart:366:52 • non_constant_list_element
+  error • The method 'Expanded' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:368:19 • undefined_method
+  error • The method 'TabBarView' isn't defined for the type '_DetailsPanel' • lib/presentation/screens/tiktok_feed_screen.dart:369:28 • undefined_method
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:389:26 • extends_non_class
+  error • Undefined class 'Widget' • lib/presentation/screens/tiktok_feed_screen.dart:395:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:395:10 • override_on_non_overriding_member
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:395:16 • undefined_class
+  error • Undefined class 'WidgetRef' • lib/presentation/screens/tiktok_feed_screen.dart:395:38 • undefined_class
+  error • The name 'Center' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:399:20 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:399:34 • undefined_method
+  error • The method 'Padding' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:404:12 • undefined_method
+  error • The name 'all' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:405:22 • creation_with_non_type
+  error • The method 'Column' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:406:14 • undefined_method
+  error • Undefined name 'CrossAxisAlignment' • lib/presentation/screens/tiktok_feed_screen.dart:407:29 • undefined_identifier
+  error • The name 'Text' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:409:17 • creation_with_non_type
+  error • The method 'TextStyle' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:411:20 • undefined_method
+  error • Undefined name 'FontWeight' • lib/presentation/screens/tiktok_feed_screen.dart:411:56 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:413:17 • creation_with_non_type
+  error • The name 'Expanded' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:414:17 • creation_with_non_type
+  error • The method 'Center' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:414:33 • undefined_method
+  error • The method 'Text' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:414:47 • undefined_method
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:415:17 • creation_with_non_type
+  error • The method 'SizedBox' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:416:11 • undefined_method
+  error • Undefined name 'ElevatedButton' • lib/presentation/screens/tiktok_feed_screen.dart:418:20 • undefined_identifier
+  error • The name 'Icon' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:424:27 • creation_with_non_type
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:424:32 • undefined_identifier
+  error • The name 'Text' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:425:28 • creation_with_non_type
+  error • Undefined name 'ElevatedButton' • lib/presentation/screens/tiktok_feed_screen.dart:426:22 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:427:34 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:428:34 • undefined_identifier
+  error • The name 'symmetric' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:429:32 • creation_with_non_type
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:439:5 • undefined_class
+  error • Undefined class 'WidgetRef' • lib/presentation/screens/tiktok_feed_screen.dart:440:5 • undefined_class
+  error • Undefined name 'ScaffoldMessenger' • lib/presentation/screens/tiktok_feed_screen.dart:466:9 • undefined_identifier
+  error • The name 'SnackBar' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:468:30 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:468:48 • undefined_method
+  error • Undefined name 'ScaffoldMessenger' • lib/presentation/screens/tiktok_feed_screen.dart:472:9 • undefined_identifier
+  error • The method 'SnackBar' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:474:24 • undefined_method
+  error • The method 'Text' isn't defined for the type '_RecipeTab' • lib/presentation/screens/tiktok_feed_screen.dart:474:42 • undefined_method
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:480:30 • extends_non_class
+  error • Undefined class 'Widget' • lib/presentation/screens/tiktok_feed_screen.dart:486:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:486:10 • override_on_non_overriding_member
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:486:16 • undefined_class
+  error • Undefined class 'WidgetRef' • lib/presentation/screens/tiktok_feed_screen.dart:486:38 • undefined_class
+  error • The name 'Center' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:490:20 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:490:34 • undefined_method
+  error • The method 'Padding' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:495:12 • undefined_method
+  error • The name 'all' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:496:22 • creation_with_non_type
+  error • The method 'Column' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:497:14 • undefined_method
+  error • Undefined name 'CrossAxisAlignment' • lib/presentation/screens/tiktok_feed_screen.dart:498:29 • undefined_identifier
+  error • The name 'Text' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:500:17 • creation_with_non_type
+  error • The method 'TextStyle' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:502:20 • undefined_method
+  error • Undefined name 'FontWeight' • lib/presentation/screens/tiktok_feed_screen.dart:502:56 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:504:17 • creation_with_non_type
+  error • The name 'Expanded' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:505:17 • creation_with_non_type
+  error • The method 'Center' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:505:33 • undefined_method
+  error • The method 'Text' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:505:47 • undefined_method
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:506:17 • creation_with_non_type
+  error • The method 'SizedBox' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:507:11 • undefined_method
+  error • Undefined name 'ElevatedButton' • lib/presentation/screens/tiktok_feed_screen.dart:509:20 • undefined_identifier
+  error • The name 'Icon' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:518:27 • creation_with_non_type
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:518:32 • undefined_identifier
+  error • The name 'Text' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:519:28 • creation_with_non_type
+  error • Undefined name 'ElevatedButton' • lib/presentation/screens/tiktok_feed_screen.dart:520:22 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:521:34 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:522:34 • undefined_identifier
+  error • The name 'symmetric' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:523:32 • creation_with_non_type
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:533:5 • undefined_class
+  error • Undefined class 'WidgetRef' • lib/presentation/screens/tiktok_feed_screen.dart:534:5 • undefined_class
+  error • Undefined name 'ScaffoldMessenger' • lib/presentation/screens/tiktok_feed_screen.dart:558:9 • undefined_identifier
+  error • The name 'SnackBar' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:560:30 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:560:48 • undefined_method
+  error • Undefined name 'ScaffoldMessenger' • lib/presentation/screens/tiktok_feed_screen.dart:564:9 • undefined_identifier
+  error • The method 'SnackBar' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:566:24 • undefined_method
+  error • The method 'Text' isn't defined for the type '_RestaurantTab' • lib/presentation/screens/tiktok_feed_screen.dart:566:42 • undefined_method
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:572:30 • extends_non_class
+  error • Undefined class 'ConsumerState' • lib/presentation/screens/tiktok_feed_screen.dart:578:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:578:33 • override_on_non_overriding_member
+  error • Classes can only extend other classes • lib/presentation/screens/tiktok_feed_screen.dart:581:35 • extends_non_class
+  error • The method 'TextEditingController' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:582:30 • undefined_method
+  error • The method 'ScrollController' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:583:29 • undefined_method
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:586:8 • override_on_non_overriding_member
+  error • The method 'dispose' isn't defined in a superclass of '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:589:11 • undefined_super_member
+  error • Undefined class 'Widget' • lib/presentation/screens/tiktok_feed_screen.dart:593:3 • undefined_class
+warning • The method doesn't override an inherited method • lib/presentation/screens/tiktok_feed_screen.dart:593:10 • override_on_non_overriding_member
+  error • Undefined class 'BuildContext' • lib/presentation/screens/tiktok_feed_screen.dart:593:16 • undefined_class
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:594:27 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:594:54 • undefined_identifier
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:595:25 • undefined_identifier
+  error • The method 'Container' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:597:12 • undefined_method
+  error • Undefined name 'MediaQuery' • lib/presentation/screens/tiktok_feed_screen.dart:598:15 • undefined_identifier
+  error • The name 'BoxDecoration' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:599:25 • creation_with_non_type
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:600:16 • undefined_identifier
+  error • Undefined name 'BorderRadius' • lib/presentation/screens/tiktok_feed_screen.dart:601:23 • undefined_identifier
+  error • Undefined name 'Radius' • lib/presentation/screens/tiktok_feed_screen.dart:601:50 • undefined_identifier
+  error • The method 'Column' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:603:14 • undefined_method
+  error • The method 'Container' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:606:11 • undefined_method
+  error • The name 'symmetric' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:607:27 • creation_with_non_type
+  error • The method 'BoxDecoration' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:610:25 • undefined_method
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:611:22 • undefined_identifier
+  error • Undefined name 'BorderRadius' • lib/presentation/screens/tiktok_feed_screen.dart:612:29 • undefined_identifier
+  error • The method 'Padding' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:617:11 • undefined_method
+  error • The name 'symmetric' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:618:28 • creation_with_non_type
+  error • The method 'Row' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:619:20 • undefined_method
+  error • The name 'Text' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:621:23 • creation_with_non_type
+  error • The method 'TextStyle' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:623:26 • undefined_method
+  error • Undefined name 'FontWeight' • lib/presentation/screens/tiktok_feed_screen.dart:623:62 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:625:23 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:628:37 • undefined_method
+  error • The method 'TextStyle' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:630:32 • undefined_method
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:632:34 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:635:40 • creation_with_non_type
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:636:43 • creation_with_non_type
+  error • The name 'Divider' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:642:17 • creation_with_non_type
+  error • The method 'Expanded' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:645:11 • undefined_method
+  error • The name 'Center' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:649:32 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:650:28 • undefined_method
+  error • Undefined name 'ListView' • lib/presentation/screens/tiktok_feed_screen.dart:654:24 • undefined_identifier
+  error • The name 'symmetric' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:656:34 • creation_with_non_type
+  error • The method 'Padding' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:665:28 • undefined_method
+  error • The name 'only' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:666:38 • creation_with_non_type
+  error • The method 'Row' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:667:30 • undefined_method
+  error • Undefined name 'CrossAxisAlignment' • lib/presentation/screens/tiktok_feed_screen.dart:668:45 • undefined_identifier
+  error • The method 'CircleAvatar' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:671:27 • undefined_method
+  error • The method 'NetworkImage' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:675:39 • undefined_method
+  error • The name 'Icon' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:679:45 • creation_with_non_type
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:679:50 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:682:33 • creation_with_non_type
+  error • The method 'Expanded' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:685:27 • undefined_method
+  error • The method 'Column' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:686:36 • undefined_method
+  error • Undefined name 'CrossAxisAlignment' • lib/presentation/screens/tiktok_feed_screen.dart:687:51 • undefined_identifier
+  error • The method 'Row' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:689:33 • undefined_method
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:691:37 • undefined_method
+  error • The name 'TextStyle' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:693:52 • creation_with_non_type
+  error • Undefined name 'FontWeight' • lib/presentation/screens/tiktok_feed_screen.dart:694:53 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:698:43 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:699:37 • undefined_method
+  error • The method 'TextStyle' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:701:46 • undefined_method
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:703:48 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:708:39 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:709:33 • undefined_method
+  error • The name 'TextStyle' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:711:48 • creation_with_non_type
+  error • The method 'IconButton' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:719:29 • undefined_method
+  error • The name 'Icon' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:720:43 • creation_with_non_type
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:720:48 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:721:38 • undefined_identifier
+  error • The name 'Center' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:730:36 • creation_with_non_type
+  error • The method 'CircularProgressIndicator' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:730:50 • undefined_method
+  error • The method 'Center' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:731:36 • undefined_method
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:731:50 • undefined_method
+  error • The name 'Divider' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:735:17 • creation_with_non_type
+  error • The method 'SafeArea' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:738:11 • undefined_method
+  error • The method 'Padding' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:739:20 • undefined_method
+  error • Undefined name 'EdgeInsets' • lib/presentation/screens/tiktok_feed_screen.dart:740:24 • undefined_identifier
+  error • Undefined name 'MediaQuery' • lib/presentation/screens/tiktok_feed_screen.dart:744:25 • undefined_identifier
+  error • The method 'Row' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:746:22 • undefined_method
+  error • The method 'Expanded' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:748:19 • undefined_method
+  error • The method 'TextField' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:749:28 • undefined_method
+  error • The method 'InputDecoration' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:751:35 • undefined_method
+  error • The method 'OutlineInputBorder' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:753:33 • undefined_method
+  error • Undefined name 'BorderRadius' • lib/presentation/screens/tiktok_feed_screen.dart:754:41 • undefined_identifier
+  error • The method 'BorderSide' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:755:39 • undefined_method
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:755:57 • undefined_identifier
+  error • The name 'symmetric' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:757:47 • creation_with_non_type
+  error • Undefined name 'TextInputAction' • lib/presentation/screens/tiktok_feed_screen.dart:763:40 • undefined_identifier
+  error • The name 'SizedBox' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:767:25 • creation_with_non_type
+  error • The method 'IconButton' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:768:19 • undefined_method
+  error • The name 'Icon' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:770:33 • creation_with_non_type
+  error • Undefined name 'Icons' • lib/presentation/screens/tiktok_feed_screen.dart:770:38 • undefined_identifier
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:771:28 • undefined_identifier
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:803:25 • undefined_identifier
+  error • Undefined name 'ScaffoldMessenger' • lib/presentation/screens/tiktok_feed_screen.dart:805:7 • undefined_identifier
+  error • Undefined name 'context' • lib/presentation/screens/tiktok_feed_screen.dart:806:9 • undefined_identifier
+  error • The name 'SnackBar' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:807:28 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:807:46 • undefined_method
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:812:13 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:813:34 • undefined_identifier
+  error • Undefined name 'Curves' • lib/presentation/screens/tiktok_feed_screen.dart:828:18 • undefined_identifier
+  error • Undefined name 'mounted' • lib/presentation/screens/tiktok_feed_screen.dart:832:11 • undefined_identifier
+  error • Undefined name 'ScaffoldMessenger' • lib/presentation/screens/tiktok_feed_screen.dart:833:9 • undefined_identifier
+  error • Undefined name 'context' • lib/presentation/screens/tiktok_feed_screen.dart:834:11 • undefined_identifier
+  error • The method 'SnackBar' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:835:24 • undefined_method
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:835:42 • undefined_method
+  error • The method 'showDialog' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:841:27 • undefined_method
+  error • Undefined name 'context' • lib/presentation/screens/tiktok_feed_screen.dart:842:16 • undefined_identifier
+  error • The method 'AlertDialog' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:844:24 • undefined_method
+  error • The name 'Text' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:845:26 • creation_with_non_type
+  error • The name 'Text' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:846:28 • creation_with_non_type
+  error • The method 'TextButton' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:848:15 • undefined_method
+  error • Undefined name 'Navigator' • lib/presentation/screens/tiktok_feed_screen.dart:849:34 • undefined_identifier
+  error • The name 'Text' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:850:30 • creation_with_non_type
+  error • The method 'TextButton' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:852:15 • undefined_method
+  error • Undefined name 'Navigator' • lib/presentation/screens/tiktok_feed_screen.dart:853:34 • undefined_identifier
+  error • The name 'Text' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:854:30 • creation_with_non_type
+  error • The method 'TextStyle' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:854:48 • undefined_method
+  error • Undefined name 'Colors' • lib/presentation/screens/tiktok_feed_screen.dart:854:65 • undefined_identifier
+  error • Undefined name 'ref' • lib/presentation/screens/tiktok_feed_screen.dart:862:15 • undefined_identifier
+  error • Undefined name 'widget' • lib/presentation/screens/tiktok_feed_screen.dart:863:36 • undefined_identifier
+  error • Undefined name 'mounted' • lib/presentation/screens/tiktok_feed_screen.dart:866:13 • undefined_identifier
+  error • Undefined name 'ScaffoldMessenger' • lib/presentation/screens/tiktok_feed_screen.dart:867:11 • undefined_identifier
+  error • Undefined name 'context' • lib/presentation/screens/tiktok_feed_screen.dart:868:13 • undefined_identifier
+  error • The name 'SnackBar' isn't a class • lib/presentation/screens/tiktok_feed_screen.dart:869:32 • creation_with_non_type
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:869:50 • undefined_method
+  error • Undefined name 'mounted' • lib/presentation/screens/tiktok_feed_screen.dart:872:13 • undefined_identifier
+  error • Undefined name 'ScaffoldMessenger' • lib/presentation/screens/tiktok_feed_screen.dart:873:11 • undefined_identifier
+  error • Undefined name 'context' • lib/presentation/screens/tiktok_feed_screen.dart:874:13 • undefined_identifier
+  error • The method 'SnackBar' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:875:26 • undefined_method
+  error • The method 'Text' isn't defined for the type '_CommentsSheetState' • lib/presentation/screens/tiktok_feed_screen.dart:875:44 • undefined_method
+

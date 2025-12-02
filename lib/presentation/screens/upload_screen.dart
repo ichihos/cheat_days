@@ -65,9 +65,9 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
           final duration = _videoController!.value.duration;
           if (duration.inSeconds > 5) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('動画は5秒以内にしてください')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('動画は5秒以内にしてください')));
             }
             setState(() {
               _mediaFile = null;
@@ -80,9 +80,9 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラー: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('エラー: $e')));
       }
     }
   }
@@ -94,9 +94,9 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
 
     final currentUser = ref.read(currentUserProvider).value;
     if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ログインしてください')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ログインしてください')));
       return;
     }
 
@@ -117,7 +117,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: currentUser.uid,
         userName: currentUser.displayName ?? 'Unknown',
-        userPhotoUrl: currentUser.photoURL,
+        userPhotoUrl: currentUser.photoUrl,
         mediaType: _mediaType!,
         mediaPath: mediaUrl,
         title: _titleController.text,
@@ -140,16 +140,16 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
       ref.invalidate(cheatDaysProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('投稿しました！')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('投稿しました！')));
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('アップロードエラー: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('アップロードエラー: $e')));
       }
     } finally {
       if (mounted) {
@@ -168,13 +168,14 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
         actions: [
           TextButton(
             onPressed: _isUploading ? null : _uploadMedia,
-            child: _isUploading
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('投稿', style: TextStyle(fontSize: 16)),
+            child:
+                _isUploading
+                    ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : const Text('投稿', style: TextStyle(fontSize: 16)),
           ),
         ],
       ),
@@ -195,18 +196,19 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: _mediaType == MediaType.video
-                        ? _videoController != null &&
-                                _videoController!.value.isInitialized
-                            ? AspectRatio(
-                                aspectRatio: _videoController!.value.aspectRatio,
-                                child: VideoPlayer(_videoController!),
-                              )
-                            : const Center(child: CircularProgressIndicator())
-                        : Image.file(
-                            _mediaFile!,
-                            fit: BoxFit.cover,
-                          ),
+                    child:
+                        _mediaType == MediaType.video
+                            ? _videoController != null &&
+                                    _videoController!.value.isInitialized
+                                ? AspectRatio(
+                                  aspectRatio:
+                                      _videoController!.value.aspectRatio,
+                                  child: VideoPlayer(_videoController!),
+                                )
+                                : const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                            : Image.file(_mediaFile!, fit: BoxFit.cover),
                   ),
                 )
               else

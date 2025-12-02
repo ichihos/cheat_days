@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -12,7 +11,8 @@ class WishlistScreen extends ConsumerStatefulWidget {
   ConsumerState<WishlistScreen> createState() => _WishlistScreenState();
 }
 
-class _WishlistScreenState extends ConsumerState<WishlistScreen> with SingleTickerProviderStateMixin {
+class _WishlistScreenState extends ConsumerState<WishlistScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -41,11 +41,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> with SingleTick
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'すべて'),
-            Tab(text: 'レシピ'),
-            Tab(text: 'お店'),
-          ],
+          tabs: const [Tab(text: 'すべて'), Tab(text: 'レシピ'), Tab(text: 'お店')],
         ),
       ),
       body: wishlistAsync.when(
@@ -76,7 +72,9 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> with SingleTick
             children: [
               _buildWishlistView(items),
               _buildWishlistView(items.where((item) => item.isRecipe).toList()),
-              _buildWishlistView(items.where((item) => item.isRestaurant).toList()),
+              _buildWishlistView(
+                items.where((item) => item.isRestaurant).toList(),
+              ),
             ],
           );
         },
@@ -105,21 +103,20 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> with SingleTick
         if (pendingItems.isNotEmpty) ...[
           const Text(
             '行きたい・作りたい',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          ...pendingItems.map((item) => _WishlistItemCard(
-                item: item,
-                onToggle: () {
-                  ref.read(wishlistProvider.notifier).toggleCompletion(item.id);
-                },
-                onDelete: () {
-                  _showDeleteConfirmation(item);
-                },
-              )),
+          ...pendingItems.map(
+            (item) => _WishlistItemCard(
+              item: item,
+              onToggle: () {
+                ref.read(wishlistProvider.notifier).toggleCompletion(item.id);
+              },
+              onDelete: () {
+                _showDeleteConfirmation(item);
+              },
+            ),
+          ),
         ],
         if (completedItems.isNotEmpty) ...[
           const SizedBox(height: 24),
@@ -132,15 +129,17 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> with SingleTick
             ),
           ),
           const SizedBox(height: 12),
-          ...completedItems.map((item) => _WishlistItemCard(
-                item: item,
-                onToggle: () {
-                  ref.read(wishlistProvider.notifier).toggleCompletion(item.id);
-                },
-                onDelete: () {
-                  _showDeleteConfirmation(item);
-                },
-              )),
+          ...completedItems.map(
+            (item) => _WishlistItemCard(
+              item: item,
+              onToggle: () {
+                ref.read(wishlistProvider.notifier).toggleCompletion(item.id);
+              },
+              onDelete: () {
+                _showDeleteConfirmation(item);
+              },
+            ),
+          ),
         ],
       ],
     );
@@ -149,27 +148,28 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen> with SingleTick
   void _showDeleteConfirmation(WishlistItem item) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('削除確認'),
-        content: Text('「${item.title}」を削除しますか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('削除確認'),
+            content: Text('「${item.title}」を削除しますか？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('キャンセル'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  ref.read(wishlistProvider.notifier).removeItem(item.id);
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('削除'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () {
-              ref.read(wishlistProvider.notifier).removeItem(item.id);
-              Navigator.of(context).pop();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('削除'),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -190,19 +190,20 @@ class _WishlistItemCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
-        leading: item.thumbnailUrl != null
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  item.thumbnailUrl!,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      _buildDefaultIcon(),
-                ),
-              )
-            : _buildDefaultIcon(),
+        leading:
+            item.thumbnailUrl != null
+                ? ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    item.thumbnailUrl!,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder:
+                        (context, error, stackTrace) => _buildDefaultIcon(),
+                  ),
+                )
+                : _buildDefaultIcon(),
         title: Text(
           item.title,
           style: TextStyle(
@@ -237,18 +238,12 @@ class _WishlistItemCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   item.isRecipe ? 'レシピ' : 'お店',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.orange,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.orange),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   DateFormat('yyyy/MM/dd').format(item.createdAt),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),

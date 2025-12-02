@@ -62,7 +62,6 @@ dependencies:
 
   # Video
   video_player: ^2.9.2
-  image_picker: ^1.1.2
 
   # Share
   share_plus: ^10.1.2

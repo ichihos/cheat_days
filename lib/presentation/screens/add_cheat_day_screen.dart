@@ -66,20 +66,23 @@ class _AddCheatDayScreenState extends ConsumerState<AddCheatDayScreen> {
 
   Future<void> _saveCheatDay() async {
     if (_formKey.currentState!.validate() && _imageFile != null) {
-      await ref.read(cheatDaysProvider.notifier).addCheatDay(
+      await ref
+          .read(cheatDaysProvider.notifier)
+          .addCheatDay(
             imageFile: _imageFile!,
             description: _descriptionController.text,
             date: _selectedDate,
             userId: 'user_001',
+            userName: 'User',
           );
 
       if (mounted) {
         Navigator.of(context).pop();
       }
     } else if (_imageFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('写真を選択してください')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('写真を選択してください')));
     }
   }
 
@@ -199,10 +202,7 @@ class _AddCheatDayScreenState extends ConsumerState<AddCheatDayScreen> {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  '保存',
-                  style: TextStyle(fontSize: 18),
-                ),
+                child: const Text('保存', style: TextStyle(fontSize: 18)),
               ),
             ],
           ),

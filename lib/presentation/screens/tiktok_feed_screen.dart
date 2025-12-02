@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:video_player/video_player.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../domain/entities/cheat_day.dart';
 import '../../domain/entities/recipe.dart';
@@ -12,6 +10,7 @@ import '../providers/auth_provider.dart';
 import '../providers/wishlist_provider.dart';
 import '../providers/comment_provider.dart';
 import '../widgets/media_player_widget.dart';
+import '../../data/repositories/firebase_cheat_day_repository.dart';
 
 class TikTokFeedScreen extends ConsumerStatefulWidget {
   const TikTokFeedScreen({super.key});
@@ -39,9 +38,7 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
       body: cheatDaysAsync.when(
         data: (cheatDays) {
           if (cheatDays.isEmpty) {
-            return const Center(
-              child: Text('まだ投稿がありません'),
-            );
+            return const Center(child: Text('まだ投稿がありません'));
           }
 
           return PageView.builder(
@@ -76,17 +73,14 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
     if (currentUser == null) return;
 
     final repository = ref.read(firebaseCheatDayRepositoryProvider);
-    if (repository is dynamic) {
+    if (repository is FirebaseCheatDayRepository) {
       await repository.toggleLike(cheatDay.id, currentUser.uid);
     }
     ref.invalidate(cheatDaysProvider);
   }
 
   Future<void> _share(CheatDay cheatDay) async {
-    await Share.share(
-      'チェック！「${cheatDay.title}」を見てみて！',
-      subject: 'チートデイズで共有',
-    );
+    await Share.share('チェック！「${cheatDay.title}」を見てみて！', subject: 'チートデイズで共有');
 
     // 共有カウントを増やす
     final updatedCheatDay = cheatDay.copyWith(
@@ -150,7 +144,7 @@ class _FeedItemState extends State<_FeedItem> {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                   stops: const [0.6, 1.0],
                 ),
@@ -218,12 +212,14 @@ class _FeedItemState extends State<_FeedItem> {
                   children: [
                     CircleAvatar(
                       radius: 20,
-                      backgroundImage: widget.cheatDay.userPhotoUrl != null
-                          ? NetworkImage(widget.cheatDay.userPhotoUrl!)
-                          : null,
-                      child: widget.cheatDay.userPhotoUrl == null
-                          ? const Icon(Icons.person)
-                          : null,
+                      backgroundImage:
+                          widget.cheatDay.userPhotoUrl != null
+                              ? NetworkImage(widget.cheatDay.userPhotoUrl!)
+                              : null,
+                      child:
+                          widget.cheatDay.userPhotoUrl == null
+                              ? const Icon(Icons.person)
+                              : null,
                     ),
                     const SizedBox(width: 12),
                     Text(
@@ -263,7 +259,7 @@ class _FeedItemState extends State<_FeedItem> {
                 cheatDay: widget.cheatDay,
                 onClose: () {
                   setState(() {
-                    _showDetails = false,
+                    _showDetails = false;
                   });
                 },
               ),
@@ -272,11 +268,7 @@ class _FeedItemState extends State<_FeedItem> {
           // 一時停止アイコン
           if (_isPaused)
             const Center(
-              child: Icon(
-                Icons.play_arrow,
-                size: 80,
-                color: Colors.white70,
-              ),
+              child: Icon(Icons.play_arrow, size: 80, color: Colors.white70),
             ),
         ],
       ),
@@ -341,10 +333,7 @@ class _DetailsPanel extends ConsumerWidget {
   final CheatDay cheatDay;
   final VoidCallback onClose;
 
-  const _DetailsPanel({
-    required this.cheatDay,
-    required this.onClose,
-  });
+  const _DetailsPanel({required this.cheatDay, required this.onClose});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -376,10 +365,7 @@ class _DetailsPanel extends ConsumerWidget {
                   TabBar(
                     labelColor: Colors.orange,
                     unselectedLabelColor: Colors.grey,
-                    tabs: const [
-                      Tab(text: 'レシピ'),
-                      Tab(text: 'お店情報'),
-                    ],
+                    tabs: const [Tab(text: 'レシピ'), Tab(text: 'お店情報')],
                   ),
                   Expanded(
                     child: TabBarView(
@@ -427,16 +413,16 @@ class _RecipeTab extends ConsumerWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          const Expanded(
-            child: Center(child: Text('レシピの詳細情報が表示されます')),
-          ),
+          const Expanded(child: Center(child: Text('レシピの詳細情報が表示されます'))),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: currentUser != null
-                  ? () => _saveRecipeToWishlist(context, ref, currentUser.uid)
-                  : null,
+              onPressed:
+                  currentUser != null
+                      ? () =>
+                          _saveRecipeToWishlist(context, ref, currentUser.uid)
+                      : null,
               icon: const Icon(Icons.bookmark_add),
               label: const Text('レシピを保存リストに追加'),
               style: ElevatedButton.styleFrom(
@@ -467,23 +453,27 @@ class _RecipeTab extends ConsumerWidget {
         steps: ['手順1', '手順2'],
         cookingTimeMinutes: 30,
         servings: 2,
+        createdAt: DateTime.now(),
       );
 
-      await ref.read(wishlistNotifierProvider.notifier).addRecipeToWishlist(
+      await ref
+          .read(wishlistProvider.notifier)
+          .addRecipeToWishlist(
             recipe: recipe,
             thumbnailUrl: cheatDay.mediaPath,
+            cheatDayId: cheatDay.id,
           );
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('レシピを保存リストに追加しました')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('レシピを保存リストに追加しました')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラー: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('エラー: $e')));
       }
     }
   }
@@ -514,16 +504,19 @@ class _RestaurantTab extends ConsumerWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          const Expanded(
-            child: Center(child: Text('お店の詳細情報が表示されます')),
-          ),
+          const Expanded(child: Center(child: Text('お店の詳細情報が表示されます'))),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: currentUser != null
-                  ? () => _saveRestaurantToWishlist(context, ref, currentUser.uid)
-                  : null,
+              onPressed:
+                  currentUser != null
+                      ? () => _saveRestaurantToWishlist(
+                        context,
+                        ref,
+                        currentUser.uid,
+                      )
+                      : null,
               icon: const Icon(Icons.bookmark_add),
               label: const Text('お店を保存リストに追加'),
               style: ElevatedButton.styleFrom(
@@ -552,23 +545,27 @@ class _RestaurantTab extends ConsumerWidget {
         name: cheatDay.title,
         address: '住所情報',
         tags: [],
+        createdAt: DateTime.now(),
       );
 
-      await ref.read(wishlistNotifierProvider.notifier).addRestaurantToWishlist(
+      await ref
+          .read(wishlistProvider.notifier)
+          .addRestaurantToWishlist(
             restaurant: restaurant,
             thumbnailUrl: cheatDay.mediaPath,
+            cheatDayId: cheatDay.id,
           );
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('お店を保存リストに追加しました')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('お店を保存リストに追加しました')));
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラー: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('エラー: $e')));
       }
     }
   }
@@ -629,10 +626,14 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                 ),
                 const SizedBox(width: 8),
                 commentsAsync.when(
-                  data: (comments) => Text(
-                    '${comments.length}',
-                    style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-                  ),
+                  data:
+                      (comments) => Text(
+                        '${comments.length}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
                   loading: () => const SizedBox(),
                   error: (_, __) => const SizedBox(),
                 ),
@@ -654,7 +655,10 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
 
                 return ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   itemCount: comments.length,
                   itemBuilder: (context, index) {
                     final comment = comments[index];
@@ -668,12 +672,14 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
                           // アバター
                           CircleAvatar(
                             radius: 18,
-                            backgroundImage: comment.userPhotoUrl != null
-                                ? NetworkImage(comment.userPhotoUrl!)
-                                : null,
-                            child: comment.userPhotoUrl == null
-                                ? const Icon(Icons.person, size: 18)
-                                : null,
+                            backgroundImage:
+                                comment.userPhotoUrl != null
+                                    ? NetworkImage(comment.userPhotoUrl!)
+                                    : null,
+                            child:
+                                comment.userPhotoUrl == null
+                                    ? const Icon(Icons.person, size: 18)
+                                    : null,
                           ),
                           const SizedBox(width: 12),
 
@@ -798,18 +804,20 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
 
     final currentUser = ref.read(currentUserProvider).value;
     if (currentUser == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ログインしてください')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ログインしてください')));
       return;
     }
 
     try {
-      await ref.read(commentsProvider(widget.cheatDay.id).notifier).addComment(
+      await ref
+          .read(commentsProvider(widget.cheatDay.id).notifier)
+          .addComment(
             content,
             currentUser.uid,
             currentUser.displayName ?? 'Unknown',
-            currentUser.photoURL,
+            currentUser.photoUrl,
           );
 
       _commentController.clear();
@@ -824,9 +832,9 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラー: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('エラー: $e')));
       }
     }
   }
@@ -834,20 +842,21 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
   Future<void> _deleteComment(String commentId) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('コメントを削除'),
-        content: const Text('このコメントを削除しますか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('キャンセル'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('コメントを削除'),
+            content: const Text('このコメントを削除しますか？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('キャンセル'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('削除', style: TextStyle(color: Colors.red)),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('削除', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
     );
 
     if (confirm == true) {
@@ -857,15 +866,15 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
             .deleteComment(commentId);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('コメントを削除しました')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('コメントを削除しました')));
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('エラー: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('エラー: $e')));
         }
       }
     }

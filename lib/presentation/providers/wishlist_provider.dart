@@ -7,26 +7,27 @@ import 'firebase_providers.dart';
 import 'auth_provider.dart';
 
 final wishlistRepositoryProvider = Provider((ref) {
-  final firestoreService = ref.watch(firestoreServiceProvider);
+  ref.watch(firestoreServiceProvider);
   return ref.watch(firebaseWishlistRepositoryProvider);
 });
 
-final wishlistProvider = StateNotifierProvider<WishlistNotifier, AsyncValue<List<WishlistItem>>>((ref) {
-  final repository = ref.watch(wishlistRepositoryProvider);
-  final userAsync = ref.watch(currentUserProvider);
+final wishlistProvider =
+    StateNotifierProvider<WishlistNotifier, AsyncValue<List<WishlistItem>>>((
+      ref,
+    ) {
+      final repository = ref.watch(wishlistRepositoryProvider);
+      final userAsync = ref.watch(currentUserProvider);
 
-  return WishlistNotifier(
-    repository,
-    userAsync.value?.uid ?? '',
-  );
-});
+      return WishlistNotifier(repository, userAsync.value?.uid ?? '');
+    });
 
 class WishlistNotifier extends StateNotifier<AsyncValue<List<WishlistItem>>> {
   final dynamic _repository;
   final String _userId;
   final _uuid = const Uuid();
 
-  WishlistNotifier(this._repository, this._userId) : super(const AsyncValue.loading()) {
+  WishlistNotifier(this._repository, this._userId)
+    : super(const AsyncValue.loading()) {
     if (_userId.isNotEmpty) {
       loadWishlist();
     }
@@ -56,7 +57,8 @@ class WishlistNotifier extends StateNotifier<AsyncValue<List<WishlistItem>>> {
         cheatDayId: cheatDayId,
         title: recipe.title,
         thumbnailUrl: thumbnailUrl,
-        description: '${recipe.ingredients.length}個の材料 • ${recipe.cookingTimeMinutes}分',
+        description:
+            '${recipe.ingredients.length}個の材料 • ${recipe.cookingTimeMinutes}分',
         createdAt: DateTime.now(),
       );
       await _repository.addWishlistItem(item);

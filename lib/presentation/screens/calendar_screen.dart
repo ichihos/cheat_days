@@ -16,7 +16,7 @@ class CalendarScreen extends ConsumerStatefulWidget {
 class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  Map<DateTime, List<CheatDay>> _cheatDaysByDate = {};
+  final Map<DateTime, List<CheatDay>> _cheatDaysByDate = {};
 
   @override
   void initState() {
@@ -57,9 +57,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       body: cheatDaysAsync.when(
         data: (cheatDays) {
           _updateCheatDaysByDate(cheatDays);
-          final selectedDayCheatDays = _selectedDay != null
-              ? _getCheatDaysForDay(_selectedDay!)
-              : <CheatDay>[];
+          final selectedDayCheatDays =
+              _selectedDay != null
+                  ? _getCheatDaysForDay(_selectedDay!)
+                  : <CheatDay>[];
 
           return Column(
             children: [
@@ -110,99 +111,108 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
               const SizedBox(height: 8),
               Expanded(
-                child: selectedDayCheatDays.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'この日のチートデイはありません',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: selectedDayCheatDays.length,
-                        itemBuilder: (context, index) {
-                          final cheatDay = selectedDayCheatDays[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.file(
-                                  File(cheatDay.imagePath),
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
+                child:
+                    selectedDayCheatDays.isEmpty
+                        ? const Center(
+                          child: Text(
+                            'この日のチートデイはありません',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                        : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: selectedDayCheatDays.length,
+                          itemBuilder: (context, index) {
+                            final cheatDay = selectedDayCheatDays[index];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: ListTile(
+                                leading: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.file(
+                                    File(cheatDay.imagePath),
+                                    width: 60,
+                                    height: 60,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              ),
-                              title: Text(
-                                cheatDay.description,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                title: Text(
+                                  cheatDay.description,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              subtitle: Text(
-                                DateFormat('HH:mm').format(cheatDay.date),
-                              ),
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => Dialog(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Image.file(File(cheatDay.imagePath)),
-                                        Padding(
-                                          padding: const EdgeInsets.all(16.0),
+                                subtitle: Text(
+                                  DateFormat('HH:mm').format(cheatDay.date),
+                                ),
+                                onTap: () {
+                                  showDialog(
+                                    context: context,
+                                    builder:
+                                        (context) => Dialog(
                                           child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text(
-                                                cheatDay.description,
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
+                                              Image.file(
+                                                File(cheatDay.imagePath),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.all(
+                                                  16.0,
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      cheatDay.description,
+                                                      style: const TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                    Text(
+                                                      DateFormat(
+                                                        'yyyy/MM/dd HH:mm',
+                                                      ).format(cheatDay.date),
+                                                      style: const TextStyle(
+                                                        color: Colors.grey,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                              const SizedBox(height: 8),
-                                              Text(
-                                                DateFormat('yyyy/MM/dd HH:mm')
-                                                    .format(cheatDay.date),
-                                                style: const TextStyle(
-                                                  color: Colors.grey,
-                                                ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  TextButton(
+                                                    onPressed:
+                                                        () =>
+                                                            Navigator.of(
+                                                              context,
+                                                            ).pop(),
+                                                    child: const Text('閉じる'),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
                                         ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.of(context).pop(),
-                                              child: const Text('閉じる'),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
               ),
             ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Text('エラー: $error'),
-        ),
+        error: (error, stack) => Center(child: Text('エラー: $error')),
       ),
     );
   }

@@ -2,21 +2,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/comment.dart';
 import 'firebase_providers.dart';
-import 'auth_provider.dart';
 
-final commentsProvider = StateNotifierProvider.family<CommentsNotifier, AsyncValue<List<Comment>>, String>(
-  (ref, cheatDayId) {
-    final repository = ref.watch(commentRepositoryProvider);
-    return CommentsNotifier(repository, cheatDayId);
-  },
-);
+final commentsProvider = StateNotifierProvider.family<
+  CommentsNotifier,
+  AsyncValue<List<Comment>>,
+  String
+>((ref, cheatDayId) {
+  final repository = ref.watch(commentRepositoryProvider);
+  return CommentsNotifier(repository, cheatDayId);
+});
 
 class CommentsNotifier extends StateNotifier<AsyncValue<List<Comment>>> {
   final dynamic _repository;
   final String _cheatDayId;
   final _uuid = const Uuid();
 
-  CommentsNotifier(this._repository, this._cheatDayId) : super(const AsyncValue.loading()) {
+  CommentsNotifier(this._repository, this._cheatDayId)
+    : super(const AsyncValue.loading()) {
     loadComments();
   }
 
@@ -30,7 +32,12 @@ class CommentsNotifier extends StateNotifier<AsyncValue<List<Comment>>> {
     }
   }
 
-  Future<void> addComment(String content, String userId, String userName, String? userPhotoUrl) async {
+  Future<void> addComment(
+    String content,
+    String userId,
+    String userName,
+    String? userPhotoUrl,
+  ) async {
     try {
       final comment = Comment(
         id: _uuid.v4(),

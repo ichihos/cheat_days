@@ -1,0 +1,29 @@
+Analyzing cheat_days...                                         
+
+  error • The named parameter 'imagePath' isn't defined • lib/data/repositories/firebase_cheat_day_repository.dart:37:47 • undefined_named_parameter
+  error • A value of type 'List<dynamic>' can't be returned from the method 'getAllWishlistItems' because it has a return type of 'Future<List<WishlistItem>>' • lib/data/repositories/firebase_wishlist_repository.dart:13:12 • return_of_invalid_type
+  error • The named parameter 'mediaPath' is required, but there's no corresponding argument • lib/presentation/providers/cheat_day_provider.dart:41:24 • missing_required_argument
+  error • The named parameter 'title' is required, but there's no corresponding argument • lib/presentation/providers/cheat_day_provider.dart:41:24 • missing_required_argument
+  error • The named parameter 'userName' is required, but there's no corresponding argument • lib/presentation/providers/cheat_day_provider.dart:41:24 • missing_required_argument
+  error • The named parameter 'imagePath' isn't defined • lib/presentation/providers/cheat_day_provider.dart:43:9 • undefined_named_parameter
+  error • The named parameter 'description' isn't defined • lib/presentation/providers/cheat_day_provider.dart:44:9 • undefined_named_parameter
+warning • Unused import: 'auth_provider.dart' • lib/presentation/providers/comment_provider.dart:5:8 • unused_import
+warning • The value of the local variable 'firestoreService' isn't used • lib/presentation/providers/wishlist_provider.dart:10:9 • unused_local_variable
+   info • The private field _cheatDaysByDate could be 'final' • lib/presentation/screens/calendar_screen.dart:19:33 • prefer_final_fields
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/presentation/screens/my_cheat_days_screen.dart:124:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/presentation/screens/slideshow_screen.dart:97:44 • deprecated_member_use
+warning • Unnecessary type check; the result is always 'true' • lib/presentation/screens/tiktok_feed_screen.dart:79:9 • unnecessary_type_check
+  error • The method 'toggleLike' isn't defined for the type 'CheatDayRepository' • lib/presentation/screens/tiktok_feed_screen.dart:80:24 • undefined_method
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/presentation/screens/tiktok_feed_screen.dart:153:34 • deprecated_member_use
+  error • Expected to find ';' • lib/presentation/screens/tiktok_feed_screen.dart:266:36 • expected_token
+  error • Expected an identifier • lib/presentation/screens/tiktok_feed_screen.dart:266:41 • missing_identifier
+  error • Unexpected text ';' • lib/presentation/screens/tiktok_feed_screen.dart:266:41 • unexpected_token
+  error • The named parameter 'createdAt' is required, but there's no corresponding argument • lib/presentation/screens/tiktok_feed_screen.dart:462:22 • missing_required_argument
+  error • Undefined name 'wishlistNotifierProvider' • lib/presentation/screens/tiktok_feed_screen.dart:472:22 • undefined_identifier
+  error • The named parameter 'createdAt' is required, but there's no corresponding argument • lib/presentation/screens/tiktok_feed_screen.dart:549:26 • missing_required_argument
+  error • Undefined name 'wishlistNotifierProvider' • lib/presentation/screens/tiktok_feed_screen.dart:557:22 • undefined_identifier
+  error • The getter 'photoURL' isn't defined for the type 'AppUserModel' • lib/presentation/screens/tiktok_feed_screen.dart:812:25 • undefined_getter
+  error • The getter 'photoURL' isn't defined for the type 'AppUserModel' • lib/presentation/screens/upload_screen.dart:120:35 • undefined_getter
+warning • Unused import: 'dart:io' • lib/presentation/screens/wishlist_screen.dart:1:8 • unused_import
+  error • The name 'MyApp' isn't a class • test/widget_test.dart:16:35 • creation_with_non_type
+

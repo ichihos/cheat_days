@@ -1,0 +1,13 @@
+Analyzing cheat_days...                                         
+
+warning • Unused import: 'dart:io' • lib/presentation/screens/tiktok_feed_screen.dart:1:8 • unused_import
+warning • Unused import: 'package:video_player/video_player.dart' • lib/presentation/screens/tiktok_feed_screen.dart:4:8 • unused_import
+  error • The name 'FirebaseCheatDayRepository' isn't defined, so it can't be used in an 'is' expression • lib/presentation/screens/tiktok_feed_screen.dart:79:23 • type_test_with_undefined_name
+  error • Expected to find ';' • lib/presentation/screens/tiktok_feed_screen.dart:266:36 • expected_token
+  error • Expected an identifier • lib/presentation/screens/tiktok_feed_screen.dart:266:41 • missing_identifier
+  error • Unexpected text ';' • lib/presentation/screens/tiktok_feed_screen.dart:266:41 • unexpected_token
+  error • The named parameter 'createdAt' is required, but there's no corresponding argument • lib/presentation/screens/tiktok_feed_screen.dart:462:22 • missing_required_argument
+  error • The named parameter 'cheatDayId' is required, but there's no corresponding argument • lib/presentation/screens/tiktok_feed_screen.dart:472:49 • missing_required_argument
+  error • The named parameter 'createdAt' is required, but there's no corresponding argument • lib/presentation/screens/tiktok_feed_screen.dart:549:26 • missing_required_argument
+  error • The named parameter 'cheatDayId' is required, but there's no corresponding argument • lib/presentation/screens/tiktok_feed_screen.dart:557:49 • missing_required_argument
+

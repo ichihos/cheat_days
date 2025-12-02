@@ -5,18 +5,20 @@ import '../../domain/entities/cheat_day.dart';
 import '../../data/datasources/local_storage.dart';
 import 'repositories_provider.dart';
 
-final cheatDaysProvider = StateNotifierProvider<CheatDaysNotifier, AsyncValue<List<CheatDay>>>((ref) {
-  final repository = ref.watch(cheatDayRepositoryProvider);
-  final localStorage = ref.watch(localStorageProvider);
-  return CheatDaysNotifier(repository, localStorage);
-});
+final cheatDaysProvider =
+    StateNotifierProvider<CheatDaysNotifier, AsyncValue<List<CheatDay>>>((ref) {
+      final repository = ref.watch(cheatDayRepositoryProvider);
+      final localStorage = ref.watch(localStorageProvider);
+      return CheatDaysNotifier(repository, localStorage);
+    });
 
 class CheatDaysNotifier extends StateNotifier<AsyncValue<List<CheatDay>>> {
   final dynamic _repository;
   final LocalStorage _localStorage;
   final _uuid = const Uuid();
 
-  CheatDaysNotifier(this._repository, this._localStorage) : super(const AsyncValue.loading()) {
+  CheatDaysNotifier(this._repository, this._localStorage)
+    : super(const AsyncValue.loading()) {
     loadCheatDays();
   }
 
@@ -35,15 +37,17 @@ class CheatDaysNotifier extends StateNotifier<AsyncValue<List<CheatDay>>> {
     required String description,
     required DateTime date,
     required String userId,
+    required String userName,
   }) async {
     try {
       final imagePath = await _localStorage.saveImage(imageFile);
       final cheatDay = CheatDay(
         id: _uuid.v4(),
-        imagePath: imagePath,
-        description: description,
+        mediaPath: imagePath,
+        title: description,
         date: date,
         userId: userId,
+        userName: userName,
       );
       await _repository.addCheatDay(cheatDay);
       await loadCheatDays();

@@ -29,13 +29,15 @@ class FirebaseCheatDayRepository implements CheatDayRepository {
     await firestoreService.addCheatDay(CheatDayModel.fromEntity(cheatDay));
   }
 
-  Future<void> addCheatDayWithImage(
-    File imageFile,
-    CheatDay cheatDay,
-  ) async {
-    final imageUrl = await firestoreService.uploadImage(imageFile, cheatDay.userId);
-    final cheatDayWithUrl = cheatDay.copyWith(imagePath: imageUrl);
-    await firestoreService.addCheatDay(CheatDayModel.fromEntity(cheatDayWithUrl));
+  Future<void> addCheatDayWithImage(File imageFile, CheatDay cheatDay) async {
+    final imageUrl = await firestoreService.uploadImage(
+      imageFile,
+      cheatDay.userId,
+    );
+    final cheatDayWithUrl = cheatDay.copyWith(mediaPath: imageUrl);
+    await firestoreService.addCheatDay(
+      CheatDayModel.fromEntity(cheatDayWithUrl),
+    );
   }
 
   @override

@@ -31,7 +31,11 @@ class SlideshowScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.photo_library_outlined, size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.photo_library_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   SizedBox(height: 16),
                   Text(
                     'まだチートデイの写真がありません',
@@ -47,7 +51,8 @@ class SlideshowScreen extends ConsumerWidget {
             );
           }
 
-          final currentCheatDay = cheatDays[slideshowState.currentIndex % cheatDays.length];
+          final currentCheatDay =
+              cheatDays[slideshowState.currentIndex % cheatDays.length];
 
           return Column(
             children: [
@@ -68,7 +73,8 @@ class SlideshowScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       LinearProgressBar(
-                        value: slideshowState.remainingSeconds /
+                        value:
+                            slideshowState.remainingSeconds /
                             (slideshowState.timerDurationMinutes * 60),
                       ),
                     ],
@@ -94,7 +100,7 @@ class SlideshowScreen extends ConsumerWidget {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha: 0.7),
                               Colors.transparent,
                             ],
                           ),
@@ -120,7 +126,10 @@ class SlideshowScreen extends ConsumerWidget {
                     children: [
                       const Text(
                         'タイマー設定',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -128,23 +137,32 @@ class SlideshowScreen extends ConsumerWidget {
                         children: [
                           _TimerButton(
                             minutes: 5,
-                            isSelected: slideshowState.timerDurationMinutes == 5,
+                            isSelected:
+                                slideshowState.timerDurationMinutes == 5,
                             onTap: () {
-                              ref.read(slideshowProvider.notifier).setTimerDuration(5);
+                              ref
+                                  .read(slideshowProvider.notifier)
+                                  .setTimerDuration(5);
                             },
                           ),
                           _TimerButton(
                             minutes: 10,
-                            isSelected: slideshowState.timerDurationMinutes == 10,
+                            isSelected:
+                                slideshowState.timerDurationMinutes == 10,
                             onTap: () {
-                              ref.read(slideshowProvider.notifier).setTimerDuration(10);
+                              ref
+                                  .read(slideshowProvider.notifier)
+                                  .setTimerDuration(10);
                             },
                           ),
                           _TimerButton(
                             minutes: 15,
-                            isSelected: slideshowState.timerDurationMinutes == 15,
+                            isSelected:
+                                slideshowState.timerDurationMinutes == 15,
                             onTap: () {
-                              ref.read(slideshowProvider.notifier).setTimerDuration(15);
+                              ref
+                                  .read(slideshowProvider.notifier)
+                                  .setTimerDuration(15);
                             },
                           ),
                         ],
@@ -152,7 +170,9 @@ class SlideshowScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () {
-                          ref.read(slideshowProvider.notifier).startSlideshow(
+                          ref
+                              .read(slideshowProvider.notifier)
+                              .startSlideshow(
                                 cheatDays.length,
                                 slideshowState.timerDurationMinutes,
                               );
@@ -188,19 +208,14 @@ class SlideshowScreen extends ConsumerWidget {
                         vertical: 16,
                       ),
                     ),
-                    child: const Text(
-                      '停止',
-                      style: TextStyle(fontSize: 18),
-                    ),
+                    child: const Text('停止', style: TextStyle(fontSize: 18)),
                   ),
                 ),
             ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Text('エラー: $error'),
-        ),
+        error: (error, stack) => Center(child: Text('エラー: $error')),
       ),
     );
   }

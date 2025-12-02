@@ -25,7 +25,11 @@ class MyCheatDaysScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.add_photo_alternate_outlined, size: 64, color: Colors.grey),
+                  Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
                   SizedBox(height: 16),
                   Text(
                     'チートデイの写真を追加しましょう',
@@ -52,64 +56,68 @@ class MyCheatDaysScreen extends ConsumerWidget {
                   onTap: () {
                     showDialog(
                       context: context,
-                      builder: (context) => Dialog(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Image.file(File(cheatDay.imagePath)),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    cheatDay.description,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    DateFormat('yyyy/MM/dd').format(cheatDay.date),
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                      builder:
+                          (context) => Dialog(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    ref
-                                        .read(cheatDaysProvider.notifier)
-                                        .deleteCheatDay(cheatDay.id);
-                                  },
-                                  child: const Text(
-                                    '削除',
-                                    style: TextStyle(color: Colors.red),
+                                Image.file(File(cheatDay.imagePath)),
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        cheatDay.description,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        DateFormat(
+                                          'yyyy/MM/dd',
+                                        ).format(cheatDay.date),
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('閉じる'),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        ref
+                                            .read(cheatDaysProvider.notifier)
+                                            .deleteCheatDay(cheatDay.id);
+                                      },
+                                      child: const Text(
+                                        '削除',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.of(context).pop(),
+                                      child: const Text('閉じる'),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
                     );
                   },
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.file(
-                        File(cheatDay.imagePath),
-                        fit: BoxFit.cover,
-                      ),
+                      Image.file(File(cheatDay.imagePath), fit: BoxFit.cover),
                       Positioned(
                         bottom: 0,
                         left: 0,
@@ -121,7 +129,7 @@ class MyCheatDaysScreen extends ConsumerWidget {
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
                               colors: [
-                                Colors.black.withOpacity(0.7),
+                                Colors.black.withValues(alpha: 0.7),
                                 Colors.transparent,
                               ],
                             ),
@@ -159,16 +167,12 @@ class MyCheatDaysScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Text('エラー: $error'),
-        ),
+        error: (error, stack) => Center(child: Text('エラー: $error')),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AddCheatDayScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const AddCheatDayScreen()),
           );
         },
         backgroundColor: Colors.orange,
