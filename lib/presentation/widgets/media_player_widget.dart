@@ -109,41 +109,94 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.cheatDay.isImage) {
-      return _buildImagePlayer();
-    } else {
-      return _buildVideoPlayer();
-    }
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.black,
+      child:
+          widget.cheatDay.isImage ? _buildImagePlayer() : _buildVideoPlayer(),
+    );
   }
 
   Widget _buildImagePlayer() {
-    if (widget.cheatDay.mediaPath.startsWith('http')) {
-      return Image.network(
-        widget.cheatDay.mediaPath,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return const Center(
-            child: Icon(Icons.error_outline, size: 64, color: Colors.white),
-          );
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.white),
-          );
-        },
-      );
-    } else {
-      return Image.file(
-        File(widget.cheatDay.mediaPath),
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return const Center(
-            child: Icon(Icons.error_outline, size: 64, color: Colors.white),
-          );
-        },
-      );
-    }
+    final imageWidget =
+        widget.cheatDay.mediaPath.startsWith('http')
+            ? Image.network(
+              widget.cheatDay.mediaPath,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              alignment: Alignment.center,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.black,
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.broken_image_rounded,
+                          size: 64,
+                          color: Colors.white38,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          '画像を読み込めません',
+                          style: TextStyle(color: Colors.white38),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: Colors.black,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: const Color(0xFFFF6B35),
+                      value:
+                          loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                    ),
+                  ),
+                );
+              },
+            )
+            : Image.file(
+              File(widget.cheatDay.mediaPath),
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              alignment: Alignment.center,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.black,
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.broken_image_rounded,
+                          size: 64,
+                          color: Colors.white38,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          '画像を読み込めません',
+                          style: TextStyle(color: Colors.white38),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+
+    return imageWidget;
   }
 
   Widget _buildVideoPlayer() {
@@ -151,17 +204,37 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
       return Container(
         color: Colors.black,
         child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
+          child: CircularProgressIndicator(color: Color(0xFFFF6B35)),
         ),
       );
     }
 
-    return FittedBox(
-      fit: BoxFit.cover,
-      child: SizedBox(
-        width: _videoController!.value.size.width,
-        height: _videoController!.value.size.height,
-        child: VideoPlayer(_videoController!),
+    // 画面サイズ
+    final screenSize = MediaQuery.of(context).size;
+    final videoSize = _videoController!.value.size;
+
+    // アスペクト比を計算して画面いっぱいに表示
+    final screenAspect = screenSize.width / screenSize.height;
+    final videoAspect = videoSize.width / videoSize.height;
+
+    double scale;
+    if (videoAspect > screenAspect) {
+      // 動画が横長 → 高さに合わせてスケール
+      scale = screenSize.height / videoSize.height;
+    } else {
+      // 動画が縦長 → 幅に合わせてスケール
+      scale = screenSize.width / videoSize.width;
+    }
+
+    return ClipRect(
+      child: OverflowBox(
+        maxWidth: double.infinity,
+        maxHeight: double.infinity,
+        child: SizedBox(
+          width: videoSize.width * scale,
+          height: videoSize.height * scale,
+          child: VideoPlayer(_videoController!),
+        ),
       ),
     );
   }

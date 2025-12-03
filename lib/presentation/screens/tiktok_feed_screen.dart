@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -23,10 +25,185 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
+  // 自動スワイプ
+  Timer? _autoSwipeTimer;
+  bool _isAutoPlaying = true;
+
+  // タイマー機能
+  bool _isTimerActive = false;
+  int _timerDurationMinutes = 5;
+  int _remainingSeconds = 0;
+  Timer? _countdownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAutoSwipe();
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
+    _autoSwipeTimer?.cancel();
+    _countdownTimer?.cancel();
     super.dispose();
+  }
+
+  void _startAutoSwipe() {
+    _autoSwipeTimer?.cancel();
+    _autoSwipeTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!_isAutoPlaying) return;
+
+      final cheatDays = ref.read(cheatDaysProvider).value ?? [];
+      if (cheatDays.isEmpty) return;
+
+      final nextPage = (_currentPage + 1) % cheatDays.length;
+      if (_pageController.hasClients) {
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  void _toggleAutoPlay() {
+    setState(() {
+      _isAutoPlaying = !_isAutoPlaying;
+    });
+  }
+
+  void _startTimer(int minutes) {
+    setState(() {
+      _isTimerActive = true;
+      _timerDurationMinutes = minutes;
+      _remainingSeconds = minutes * 60;
+      _isAutoPlaying = true;
+    });
+
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        setState(() {
+          _remainingSeconds--;
+        });
+      } else {
+        _stopTimer();
+        _showTimerCompleteDialog();
+      }
+    });
+  }
+
+  void _stopTimer() {
+    _countdownTimer?.cancel();
+    setState(() {
+      _isTimerActive = false;
+      _remainingSeconds = 0;
+    });
+  }
+
+  void _showTimerCompleteDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Row(
+              children: [
+                Text('🎉 ', style: TextStyle(fontSize: 24)),
+                Text('お疲れさま！'),
+              ],
+            ),
+            content: Text('$_timerDurationMinutes分間、食欲に打ち勝ちました！\nこの調子で頑張ろう💪'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('閉じる'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  String _formatTime(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
+  void _showTimerDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  '飯テロタイマー',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '食欲を我慢する時間を設定しよう',
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _TimerButton(
+                      minutes: 5,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _startTimer(5);
+                      },
+                    ),
+                    _TimerButton(
+                      minutes: 10,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _startTimer(10);
+                      },
+                    ),
+                    _TimerButton(
+                      minutes: 15,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _startTimer(15);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SafeArea(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('キャンセル'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+    );
   }
 
   @override
@@ -35,35 +212,254 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
     final currentUser = ref.watch(currentUserProvider);
 
     return Scaffold(
-      body: cheatDaysAsync.when(
-        data: (cheatDays) {
-          if (cheatDays.isEmpty) {
-            return const Center(child: Text('まだ投稿がありません'));
-          }
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // メインフィード
+          cheatDaysAsync.when(
+            data: (cheatDays) {
+              if (cheatDays.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF6B35).withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.restaurant_rounded,
+                          size: 50,
+                          color: Color(0xFFFF6B35),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'まだ投稿がありません',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '最初のチートデイを投稿しよう！',
+                        style: TextStyle(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
-          return PageView.builder(
-            controller: _pageController,
-            scrollDirection: Axis.vertical,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            itemCount: cheatDays.length,
-            itemBuilder: (context, index) {
-              final cheatDay = cheatDays[index];
-              return _FeedItem(
-                cheatDay: cheatDay,
-                isActive: index == _currentPage,
-                currentUserId: currentUser.value?.uid ?? '',
-                onLike: () => _toggleLike(cheatDay),
-                onShare: () => _share(cheatDay),
+              return PageView.builder(
+                controller: _pageController,
+                scrollDirection: Axis.vertical,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentPage = index;
+                  });
+                },
+                itemCount: cheatDays.length,
+                itemBuilder: (context, index) {
+                  final cheatDay = cheatDays[index];
+                  return _FeedItem(
+                    cheatDay: cheatDay,
+                    isActive: index == _currentPage,
+                    currentUserId: currentUser.value?.uid ?? '',
+                    onLike: () => _toggleLike(cheatDay),
+                    onShare: () => _share(cheatDay),
+                  );
+                },
               );
             },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('エラー: $error')),
+            loading:
+                () => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF6B35).withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFFF6B35),
+                            strokeWidth: 3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'おいしい投稿を読み込み中...',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+            error:
+                (error, stack) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        size: 48,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'エラー: $error',
+                        style: const TextStyle(color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+          ),
+
+          // ヘッダー（ロゴ＆ステータス）
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                ),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      // 再生/一時停止ボタン
+                      GestureDetector(
+                        onTap: _toggleAutoPlay,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isAutoPlaying
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      // タイトル or タイマー表示
+                      if (_isTimerActive)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF6B35),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.timer_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _formatTime(_remainingSeconds),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  fontFeatures: [FontFeature.tabularFigures()],
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.local_fire_department_rounded,
+                                color: Color(0xFFFF6B35),
+                                size: 20,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'みんなのチートデイ',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const Spacer(),
+                      // タイマーボタン
+                      GestureDetector(
+                        onTap: _isTimerActive ? _stopTimer : _showTimerDialog,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color:
+                                _isTimerActive
+                                    ? Colors.red.withOpacity(0.8)
+                                    : Colors.white.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isTimerActive
+                                ? Icons.stop_rounded
+                                : Icons.timer_outlined,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -154,8 +550,8 @@ class _FeedItemState extends State<_FeedItem> {
 
           // 右側のアクションボタン
           Positioned(
-            right: 16,
-            bottom: 100,
+            right: 12,
+            bottom: 120,
             child: Column(
               children: [
                 // いいね
@@ -165,7 +561,7 @@ class _FeedItemState extends State<_FeedItem> {
                   color: isLiked ? Colors.red : Colors.white,
                   onTap: widget.onLike,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
                 // コメント
                 _ActionButton(
@@ -173,18 +569,27 @@ class _FeedItemState extends State<_FeedItem> {
                   label: _formatCount(widget.cheatDay.commentsCount),
                   onTap: () => _showComments(context),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
-                // 共有
+                // 保存
                 _ActionButton(
-                  icon: Icons.share_outlined,
-                  label: _formatCount(widget.cheatDay.sharesCount),
+                  icon: Icons.bookmark_border_rounded,
+                  label: '保存',
                   onTap: widget.onShare,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
+
+                // シェア
+                _ActionButton(
+                  icon: Icons.send_rounded,
+                  label: 'シェア',
+                  onTap: widget.onShare,
+                ),
 
                 // 詳細情報（レシピ・お店）
-                if (widget.cheatDay.hasRecipe || widget.cheatDay.hasRestaurant)
+                if (widget.cheatDay.hasRecipe ||
+                    widget.cheatDay.hasRestaurant) ...[
+                  const SizedBox(height: 20),
                   _ActionButton(
                     icon: Icons.info_outline,
                     label: '詳細',
@@ -194,6 +599,7 @@ class _FeedItemState extends State<_FeedItem> {
                       });
                     },
                   ),
+                ],
               ],
             ),
           ),
@@ -201,8 +607,8 @@ class _FeedItemState extends State<_FeedItem> {
           // 下部情報
           Positioned(
             left: 16,
-            right: 80,
-            bottom: 24,
+            right: 72,
+            bottom: 100,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -878,5 +1284,54 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
         }
       }
     }
+  }
+}
+
+class _TimerButton extends StatelessWidget {
+  final int minutes;
+  final VoidCallback onTap;
+
+  const _TimerButton({required this.minutes, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 80,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF6B35), Color(0xFFFF8F5C)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFF6B35).withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              '$minutes',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Text(
+              '分',
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

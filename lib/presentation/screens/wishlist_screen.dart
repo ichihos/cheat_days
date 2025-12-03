@@ -32,54 +32,148 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
     final wishlistAsync = ref.watch(wishlistProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('食べたいものリスト'),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: const [Tab(text: 'すべて'), Tab(text: 'レシピ'), Tab(text: 'お店')],
-        ),
-      ),
-      body: wishlistAsync.when(
-        data: (items) {
-          if (items.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: const Color(0xFFFFFBF5),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // カスタムヘッダー
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
                 children: [
-                  Icon(Icons.bookmark_border, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    '保存したアイテムがありません',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6B35).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.bookmark_rounded,
+                      color: Color(0xFFFF6B35),
+                    ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    '気になるレシピやお店を保存しましょう',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '食べたいリスト',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '気になるグルメをチェック',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            );
-          }
-
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              _buildWishlistView(items),
-              _buildWishlistView(items.where((item) => item.isRecipe).toList()),
-              _buildWishlistView(
-                items.where((item) => item.isRestaurant).toList(),
+            ),
+            // カスタムタブ
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
               ),
-            ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('エラー: $error')),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                labelColor: const Color(0xFFFF6B35),
+                unselectedLabelColor: Colors.grey,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                dividerColor: Colors.transparent,
+                tabs: const [
+                  Tab(text: 'すべて'),
+                  Tab(text: 'レシピ'),
+                  Tab(text: 'お店'),
+                ],
+              ),
+            ),
+            // コンテンツ
+            Expanded(
+              child: wishlistAsync.when(
+                data: (items) {
+                  if (items.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF6B35).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.bookmark_border_rounded,
+                              size: 40,
+                              color: Color(0xFFFF6B35),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            '保存したアイテムがありません',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '気になるレシピやお店を保存しよう',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildWishlistView(items),
+                      _buildWishlistView(
+                        items.where((item) => item.isRecipe).toList(),
+                      ),
+                      _buildWishlistView(
+                        items.where((item) => item.isRestaurant).toList(),
+                      ),
+                    ],
+                  );
+                },
+                loading:
+                    () => const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFFF6B35),
+                      ),
+                    ),
+                error: (error, stack) => Center(child: Text('エラー: $error')),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

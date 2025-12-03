@@ -14,6 +14,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -24,15 +25,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _signInWithEmail() async {
     if (_formKey.currentState!.validate()) {
-      await ref.read(authNotifierProvider.notifier).signInWithEmail(
-            _emailController.text,
-            _passwordController.text,
-          );
+      await ref
+          .read(authNotifierProvider.notifier)
+          .signInWithEmail(_emailController.text, _passwordController.text);
+      if (mounted) {
+        final authState = ref.read(authNotifierProvider);
+        if (authState.value != null) {
+          Navigator.of(context).pop();
+        }
+      }
     }
   }
 
   Future<void> _signInWithGoogle() async {
     await ref.read(authNotifierProvider.notifier).signInWithGoogle();
+    if (mounted) {
+      final authState = ref.read(authNotifierProvider);
+      if (authState.value != null) {
+        Navigator.of(context).pop();
+      }
+    }
   }
 
   @override
@@ -40,44 +52,122 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authNotifierProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFFFFBF5),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
+        child: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.restaurant,
-                    size: 80,
-                    color: Colors.orange,
+                  // 戻るボタン
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.arrow_back_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  // ロゴ
+                  Center(
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF6B35), Color(0xFFFF8F5C)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFF6B35).withOpacity(0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.local_fire_department_rounded,
+                        size: 50,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'チートデイズ',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange,
+                  const Center(
+                    child: Text(
+                      'おかえりなさい！',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    '~目で食べる~',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
+                  Center(
+                    child: Text(
+                      'チートデイを楽しもう',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 40),
+                  // メールアドレス
+                  Text(
+                    'メールアドレス',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'メールアドレス',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.email),
+                    decoration: InputDecoration(
+                      hintText: 'example@email.com',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFFF6B35),
+                          width: 2,
+                        ),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.email_outlined,
+                        color: Colors.grey.shade500,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -87,15 +177,61 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
+                  // パスワード
+                  Text(
+                    'パスワード',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'パスワード',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.lock),
+                    decoration: InputDecoration(
+                      hintText: '••••••••',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFFF6B35),
+                          width: 2,
+                        ),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.lock_outline_rounded,
+                        color: Colors.grey.shade500,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: Colors.grey.shade500,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
                     ),
-                    obscureText: true,
+                    obscureText: _obscurePassword,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'パスワードを入力してください';
@@ -103,73 +239,158 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
+                  // ログインボタン
                   SizedBox(
                     width: double.infinity,
+                    height: 56,
                     child: ElevatedButton(
                       onPressed: authState.isLoading ? null : _signInWithEmail,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                        backgroundColor: const Color(0xFFFF6B35),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                      child: authState.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                      child:
+                          authState.isLoading
+                              ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                              : const Text(
+                                'ログイン',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            )
-                          : const Text('ログイン', style: TextStyle(fontSize: 16)),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Row(
+                  const SizedBox(height: 24),
+                  // 区切り線
+                  Row(
                     children: [
-                      Expanded(child: Divider()),
+                      Expanded(child: Divider(color: Colors.grey.shade300)),
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text('または'),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'または',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
-                      Expanded(child: Divider()),
+                      Expanded(child: Divider(color: Colors.grey.shade300)),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
+                  // Googleログイン
                   SizedBox(
                     width: double.infinity,
+                    height: 56,
                     child: OutlinedButton.icon(
                       onPressed: authState.isLoading ? null : _signInWithGoogle,
                       icon: Image.asset(
                         'assets/google_logo.png',
                         height: 24,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.g_mobiledata, size: 24),
+                        errorBuilder:
+                            (context, error, stackTrace) => Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'G',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
                       ),
-                      label: const Text('Googleでログイン'),
+                      label: const Text(
+                        'Googleでログイン',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        foregroundColor: Colors.black87,
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const SignupScreen(),
+                  const SizedBox(height: 32),
+                  // 新規登録リンク
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'アカウントをお持ちでない方は',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 14,
+                          ),
                         ),
-                      );
-                    },
-                    child: const Text('アカウントを作成'),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => const SignupScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            '新規登録',
+                            style: TextStyle(
+                              color: Color(0xFFFF6B35),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   if (authState.hasError)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        'エラー: ${authState.error}',
-                        style: const TextStyle(color: Colors.red),
+                    Container(
+                      margin: const EdgeInsets.only(top: 16),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.error_outline_rounded,
+                            color: Colors.red.shade700,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'ログインに失敗しました',
+                              style: TextStyle(color: Colors.red.shade700),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],

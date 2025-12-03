@@ -7,6 +7,8 @@ final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
 });
 
+final isGuestModeProvider = StateProvider<bool>((ref) => false);
+
 final authStateProvider = StreamProvider<User?>((ref) {
   final authService = ref.watch(authServiceProvider);
   return authService.authStateChanges;
@@ -17,10 +19,11 @@ final currentUserProvider = FutureProvider<AppUserModel?>((ref) async {
   return await authService.getCurrentAppUser();
 });
 
-final authNotifierProvider = StateNotifierProvider<AuthNotifier, AsyncValue<AppUserModel?>>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return AuthNotifier(authService);
-});
+final authNotifierProvider =
+    StateNotifierProvider<AuthNotifier, AsyncValue<AppUserModel?>>((ref) {
+      final authService = ref.watch(authServiceProvider);
+      return AuthNotifier(authService);
+    });
 
 class AuthNotifier extends StateNotifier<AsyncValue<AppUserModel?>> {
   final AuthService _authService;
@@ -59,10 +62,18 @@ class AuthNotifier extends StateNotifier<AsyncValue<AppUserModel?>> {
     }
   }
 
-  Future<void> signUpWithEmail(String email, String password, String displayName) async {
+  Future<void> signUpWithEmail(
+    String email,
+    String password,
+    String displayName,
+  ) async {
     state = const AsyncValue.loading();
     try {
-      final user = await _authService.signUpWithEmail(email, password, displayName);
+      final user = await _authService.signUpWithEmail(
+        email,
+        password,
+        displayName,
+      );
       state = AsyncValue.data(user);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
