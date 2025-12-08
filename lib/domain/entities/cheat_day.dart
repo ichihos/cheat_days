@@ -80,4 +80,50 @@ class CheatDay {
   bool get isImage => mediaType == MediaType.image;
   String get imagePath => mediaPath; // backward compatibility
   String get description => title; // backward compatibility
+
+  // JSON serialization for caching
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'mediaType': mediaType.name,
+      'mediaPath': mediaPath,
+      'videoDurationSeconds': videoDurationSeconds,
+      'date': date.toIso8601String(),
+      'userId': userId,
+      'userName': userName,
+      'userPhotoUrl': userPhotoUrl,
+      'likesCount': likesCount,
+      'commentsCount': commentsCount,
+      'sharesCount': sharesCount,
+      'likedBy': likedBy,
+      'isPublic': isPublic,
+      'hasRecipe': hasRecipe,
+      'hasRestaurant': hasRestaurant,
+    };
+  }
+
+  factory CheatDay.fromJson(Map<String, dynamic> json) {
+    return CheatDay(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      mediaType: MediaType.values.firstWhere(
+        (e) => e.name == json['mediaType'],
+        orElse: () => MediaType.image,
+      ),
+      mediaPath: json['mediaPath'] as String,
+      videoDurationSeconds: json['videoDurationSeconds'] as int?,
+      date: DateTime.parse(json['date'] as String),
+      userId: json['userId'] as String,
+      userName: json['userName'] as String,
+      userPhotoUrl: json['userPhotoUrl'] as String?,
+      likesCount: json['likesCount'] as int? ?? 0,
+      commentsCount: json['commentsCount'] as int? ?? 0,
+      sharesCount: json['sharesCount'] as int? ?? 0,
+      likedBy: (json['likedBy'] as List<dynamic>?)?.cast<String>() ?? [],
+      isPublic: json['isPublic'] as bool? ?? true,
+      hasRecipe: json['hasRecipe'] as bool? ?? false,
+      hasRestaurant: json['hasRestaurant'] as bool? ?? false,
+    );
+  }
 }
