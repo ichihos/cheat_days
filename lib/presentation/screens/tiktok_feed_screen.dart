@@ -74,6 +74,21 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
     });
   }
 
+  /// 隣接するコンテンツの画像をプリロード
+  void _precacheAdjacentImages(List<CheatDay> cheatDays, int currentIndex) {
+    // 前後2件をプリロード
+    for (int offset = -2; offset <= 2; offset++) {
+      if (offset == 0) continue;
+      final targetIndex = currentIndex + offset;
+      if (targetIndex >= 0 && targetIndex < cheatDays.length) {
+        final cheatDay = cheatDays[targetIndex];
+        if (cheatDay.isImage && cheatDay.mediaPath.startsWith('http')) {
+          precacheImage(NetworkImage(cheatDay.mediaPath), context);
+        }
+      }
+    }
+  }
+
   void _startTimer(int minutes) {
     setState(() {
       _isTimerActive = true;
@@ -267,6 +282,8 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
                   setState(() {
                     _currentPage = index;
                   });
+                  // 隣接コンテンツをプリロード
+                  _precacheAdjacentImages(cheatDays, index);
                 },
                 itemCount: cheatDays.length,
                 itemBuilder: (context, index) {
@@ -274,9 +291,11 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
                   return _FeedItem(
                     cheatDay: cheatDay,
                     isActive: index == _currentPage,
+                    isAutoPlaying: _isAutoPlaying,
                     currentUserId: currentUser.value?.uid ?? '',
                     onLike: () => _toggleLike(cheatDay),
                     onShare: () => _share(cheatDay),
+                    onPause: _toggleAutoPlay,
                   );
                 },
               );
@@ -470,48 +489,138 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
     final currentUser = ref.read(currentUserProvider).value;
     if (currentUser == null) return;
 
+    // 楽観的UI更新: 即座にローカル状態を更新
+    final currentCheatDays = ref.read(cheatDaysProvider).value ?? [];
+    final isLiked = cheatDay.likedBy.contains(currentUser.uid);
+    final updatedLikedBy =
+        isLiked
+            ? cheatDay.likedBy.where((id) => id != currentUser.uid).toList()
+            : [...cheatDay.likedBy, currentUser.uid];
+    final updatedCheatDay = cheatDay.copyWith(
+      likedBy: updatedLikedBy,
+      likesCount: updatedLikedBy.length,
+    );
+
+    final updatedList =
+        currentCheatDays
+            .map((day) => day.id == cheatDay.id ? updatedCheatDay : day)
+            .toList();
+    ref.read(cheatDaysProvider.notifier).updateLocalState(updatedList);
+
+    // バックグラウンドでサーバー同期
     final repository = ref.read(firebaseCheatDayRepositoryProvider);
     if (repository is FirebaseCheatDayRepository) {
       await repository.toggleLike(cheatDay.id, currentUser.uid);
     }
-    ref.invalidate(cheatDaysProvider);
   }
 
   Future<void> _share(CheatDay cheatDay) async {
     await Share.share('チェック！「${cheatDay.title}」を見てみて！', subject: 'チートデイズで共有');
 
-    // 共有カウントを増やす
+    // 楽観的UI更新: 共有カウントを即座に更新
+    final currentCheatDays = ref.read(cheatDaysProvider).value ?? [];
     final updatedCheatDay = cheatDay.copyWith(
       sharesCount: cheatDay.sharesCount + 1,
     );
+    final updatedList =
+        currentCheatDays
+            .map((day) => day.id == cheatDay.id ? updatedCheatDay : day)
+            .toList();
+    ref.read(cheatDaysProvider.notifier).updateLocalState(updatedList);
+
+    // バックグラウンドでサーバー同期
     final repository = ref.read(firebaseCheatDayRepositoryProvider);
     await repository.updateCheatDay(updatedCheatDay);
-    ref.invalidate(cheatDaysProvider);
   }
 }
 
-class _FeedItem extends StatefulWidget {
+class _FeedItem extends ConsumerStatefulWidget {
   final CheatDay cheatDay;
   final bool isActive;
+  final bool isAutoPlaying;
   final String currentUserId;
   final VoidCallback onLike;
   final VoidCallback onShare;
+  final VoidCallback onPause;
 
   const _FeedItem({
     required this.cheatDay,
     required this.isActive,
+    required this.isAutoPlaying,
     required this.currentUserId,
     required this.onLike,
     required this.onShare,
+    required this.onPause,
   });
 
   @override
-  State<_FeedItem> createState() => _FeedItemState();
+  ConsumerState<_FeedItem> createState() => _FeedItemState();
 }
 
-class _FeedItemState extends State<_FeedItem> {
+class _FeedItemState extends ConsumerState<_FeedItem> {
   bool _isPaused = false;
   bool _showDetails = false;
+  bool _isSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfSaved();
+  }
+
+  Future<void> _checkIfSaved() async {
+    final isInWishlist = await ref
+        .read(wishlistProvider.notifier)
+        .isInWishlist(widget.cheatDay.id);
+    if (mounted) {
+      setState(() {
+        _isSaved = isInWishlist;
+      });
+    }
+  }
+
+  Future<void> _saveToWishlist() async {
+    if (_isSaved) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('既に保存済みです')));
+      return;
+    }
+
+    if (widget.currentUserId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('ログインしてください')));
+      return;
+    }
+
+    try {
+      await ref
+          .read(wishlistProvider.notifier)
+          .addCheatDayToWishlist(
+            cheatDayId: widget.cheatDay.id,
+            title: widget.cheatDay.title,
+            thumbnailUrl: widget.cheatDay.mediaPath,
+            description: '${widget.cheatDay.userName}の投稿',
+          );
+
+      setState(() {
+        _isSaved = true;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('食べたいものリストに保存しました！')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('保存に失敗しました: $e')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -519,8 +628,21 @@ class _FeedItemState extends State<_FeedItem> {
 
     return GestureDetector(
       onTap: () {
+        // 自動スワイプを停止
+        if (widget.isAutoPlaying) {
+          widget.onPause();
+        }
         setState(() {
           _isPaused = !_isPaused;
+        });
+      },
+      onLongPress: () {
+        // 長押しで一時停止（自動スワイプも停止）
+        if (widget.isAutoPlaying) {
+          widget.onPause();
+        }
+        setState(() {
+          _isPaused = true;
         });
       },
       child: Stack(
@@ -575,9 +697,13 @@ class _FeedItemState extends State<_FeedItem> {
 
                 // 保存
                 _ActionButton(
-                  icon: Icons.bookmark_border_rounded,
-                  label: '保存',
-                  onTap: widget.onShare,
+                  icon:
+                      _isSaved
+                          ? Icons.bookmark_rounded
+                          : Icons.bookmark_border_rounded,
+                  label: _isSaved ? '保存済' : '保存',
+                  color: _isSaved ? const Color(0xFFFF6B35) : Colors.white,
+                  onTap: _saveToWishlist,
                 ),
                 const SizedBox(height: 20),
 

@@ -95,6 +95,38 @@ class WishlistNotifier extends StateNotifier<AsyncValue<List<WishlistItem>>> {
     }
   }
 
+  /// チートデイ投稿を食べたいものリストに追加
+  Future<void> addCheatDayToWishlist({
+    required String cheatDayId,
+    required String title,
+    String? thumbnailUrl,
+    String? description,
+  }) async {
+    try {
+      // 既に追加されているか確認
+      final isAlreadyAdded = await isInWishlist(cheatDayId);
+      if (isAlreadyAdded) {
+        return; // 既に追加済み
+      }
+
+      final item = WishlistItem(
+        id: _uuid.v4(),
+        userId: _userId,
+        type: WishlistItemType.cheatday,
+        referenceId: cheatDayId,
+        cheatDayId: cheatDayId,
+        title: title,
+        thumbnailUrl: thumbnailUrl,
+        description: description ?? '食べたいものリストに保存済み',
+        createdAt: DateTime.now(),
+      );
+      await _repository.addWishlistItem(item);
+      await loadWishlist();
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+    }
+  }
+
   Future<void> toggleCompletion(String id) async {
     try {
       await _repository.toggleCompletion(id);

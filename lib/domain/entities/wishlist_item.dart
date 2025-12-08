@@ -1,4 +1,4 @@
-enum WishlistItemType { recipe, restaurant }
+enum WishlistItemType { recipe, restaurant, cheatday }
 
 class WishlistItem {
   final String id;
@@ -53,4 +53,5 @@ class WishlistItem {
 
   bool get isRecipe => type == WishlistItemType.recipe;
   bool get isRestaurant => type == WishlistItemType.restaurant;
+  bool get isCheatday => type == WishlistItemType.cheatday;
 }

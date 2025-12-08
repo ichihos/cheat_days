@@ -65,6 +65,11 @@ class CheatDaysNotifier extends StateNotifier<AsyncValue<List<CheatDay>>> {
     }
   }
 
+  /// 楽観的UI更新用: サーバーに問い合わせずにローカル状態を更新
+  void updateLocalState(List<CheatDay> cheatDays) {
+    state = AsyncValue.data(cheatDays);
+  }
+
   Future<List<CheatDay>> getCheatDaysByDate(DateTime date) async {
     return await _repository.getCheatDaysByDate(date);
   }

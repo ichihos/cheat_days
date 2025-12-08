@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/scheduled_cheat_day_provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -245,11 +246,27 @@ class CheatDayCountdownDialog extends ConsumerWidget {
   }
 }
 
-/// 起動時にダイアログを表示
-void showCheatDayCountdownDialog(BuildContext context) {
-  showDialog(
-    context: context,
-    barrierDismissible: true,
-    builder: (context) => const CheatDayCountdownDialog(),
-  );
+/// 起動時にダイアログを表示（1日1回のみ）
+Future<void> showCheatDayCountdownDialog(BuildContext context) async {
+  const String lastShownKey = 'countdown_dialog_last_shown';
+
+  final prefs = await SharedPreferences.getInstance();
+  final lastShown = prefs.getString(lastShownKey);
+  final today = DateTime.now().toIso8601String().substring(0, 10); // YYYY-MM-DD
+
+  // 今日既に表示済みならスキップ
+  if (lastShown == today) {
+    return;
+  }
+
+  // 今日表示したことを記録
+  await prefs.setString(lastShownKey, today);
+
+  if (context.mounted) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => const CheatDayCountdownDialog(),
+    );
+  }
 }
