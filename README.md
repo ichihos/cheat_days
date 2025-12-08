@@ -1,4 +1,4 @@
-# チートデイズ ~目で食べる~
+# チートデイズ ~食べるためのダイエット~
 
 <p align="center">
   <img src="https://img.shields.io/badge/Flutter-3.7.2-blue" alt="Flutter">
