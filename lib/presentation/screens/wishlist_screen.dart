@@ -59,14 +59,14 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '食べたいリスト',
+                          'チートデイに食べたいリスト',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          '気になるグルメをチェック',
+                          '次のご褒美をリストアップ！',
                           style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                       ],
@@ -196,7 +196,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
       children: [
         if (pendingItems.isNotEmpty) ...[
           const Text(
-            '行きたい・作りたい',
+            '次のチートデイで！',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),

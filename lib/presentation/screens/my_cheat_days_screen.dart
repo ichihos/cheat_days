@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -80,7 +79,7 @@ class MyCheatDaysScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      currentUser.value?.email ?? 'ログインしてチートデイを記録しよう',
+                      currentUser.value?.email ?? 'ログインしてダイエット記録を始めよう',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -89,57 +88,67 @@ class MyCheatDaysScreen extends ConsumerWidget {
                     const SizedBox(height: 20),
                     // 統計カード
                     cheatDaysAsync.when(
-                      data:
-                          (cheatDays) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 16,
-                              horizontal: 24,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _StatItem(
-                                  count: cheatDays.length,
-                                  label: '投稿',
-                                  icon: Icons.photo_library_rounded,
-                                ),
-                                Container(
-                                  width: 1,
-                                  height: 40,
-                                  color: Colors.grey.shade200,
-                                ),
-                                _StatItem(
-                                  count: cheatDays.fold(
-                                    0,
-                                    (sum, item) => sum + item.likesCount,
-                                  ),
-                                  label: 'いいね',
-                                  icon: Icons.favorite_rounded,
-                                ),
-                                Container(
-                                  width: 1,
-                                  height: 40,
-                                  color: Colors.grey.shade200,
-                                ),
-                                _StatItem(
-                                  count: _countThisMonth(cheatDays),
-                                  label: '今月',
-                                  icon: Icons.calendar_today_rounded,
-                                ),
-                              ],
-                            ),
+                      data: (allCheatDays) {
+                        final cheatDays =
+                            currentUser.value != null
+                                ? allCheatDays
+                                    .where(
+                                      (cd) =>
+                                          cd.userId == currentUser.value!.uid,
+                                    )
+                                    .toList()
+                                : <dynamic>[];
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 24,
                           ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _StatItem(
+                                count: cheatDays.length,
+                                label: '投稿',
+                                icon: Icons.photo_library_rounded,
+                              ),
+                              Container(
+                                width: 1,
+                                height: 40,
+                                color: Colors.grey.shade200,
+                              ),
+                              _StatItem(
+                                count: cheatDays.fold<int>(
+                                  0,
+                                  (sum, item) => sum + (item.likesCount as int),
+                                ),
+                                label: 'いいね',
+                                icon: Icons.favorite_rounded,
+                              ),
+                              Container(
+                                width: 1,
+                                height: 40,
+                                color: Colors.grey.shade200,
+                              ),
+                              _StatItem(
+                                count: _countThisMonth(cheatDays),
+                                label: '今月',
+                                icon: Icons.calendar_today_rounded,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                       loading: () => const SizedBox(),
                       error: (_, __) => const SizedBox(),
                     ),
@@ -215,7 +224,13 @@ class MyCheatDaysScreen extends ConsumerWidget {
             ),
             // グリッド
             cheatDaysAsync.when(
-              data: (cheatDays) {
+              data: (allCheatDays) {
+                final cheatDays =
+                    currentUser.value != null
+                        ? allCheatDays
+                            .where((cd) => cd.userId == currentUser.value!.uid)
+                            .toList()
+                        : <dynamic>[];
                 if (cheatDays.isEmpty) {
                   return SliverFillRemaining(
                     child: Center(
@@ -245,7 +260,7 @@ class MyCheatDaysScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'チートデイの写真を追加しよう',
+                            '次のチートデイで最初の投稿をしよう！',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey.shade600,
@@ -275,7 +290,7 @@ class MyCheatDaysScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             image: DecorationImage(
-                              image: FileImage(File(cheatDay.imagePath)),
+                              image: NetworkImage(cheatDay.mediaPath),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -342,8 +357,8 @@ class MyCheatDaysScreen extends ConsumerWidget {
                 ),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.file(
-                    File(cheatDay.imagePath),
+                  child: Image.network(
+                    cheatDay.mediaPath,
                     height: 300,
                     width: double.infinity,
                     fit: BoxFit.cover,

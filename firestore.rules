@@ -65,6 +65,13 @@ service cloud.firestore {
       allow delete: if isSignedIn();
     }
 
+    // ScheduledCheatDays コレクション
+    match /scheduled_cheat_days/{documentId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isOwner(resource.data.userId);
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+
     // Users コレクション
     match /users/{userId} {
       // 自分のユーザー情報のみ読み書き可能

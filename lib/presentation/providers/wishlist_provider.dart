@@ -30,6 +30,9 @@ class WishlistNotifier extends StateNotifier<AsyncValue<List<WishlistItem>>> {
     : super(const AsyncValue.loading()) {
     if (_userId.isNotEmpty) {
       loadWishlist();
+    } else {
+      // ユーザーIDが空の場合は空のリストを返す（無限ローディングを防ぐ）
+      state = const AsyncValue.data([]);
     }
   }
 

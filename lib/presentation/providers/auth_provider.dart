@@ -15,6 +15,10 @@ final authStateProvider = StreamProvider<User?>((ref) {
 });
 
 final currentUserProvider = FutureProvider<AppUserModel?>((ref) async {
+  // authStateProviderを監視して、ログイン状態が変わったら再評価
+  final authState = ref.watch(authStateProvider);
+  if (authState.value == null) return null;
+
   final authService = ref.watch(authServiceProvider);
   return await authService.getCurrentAppUser();
 });

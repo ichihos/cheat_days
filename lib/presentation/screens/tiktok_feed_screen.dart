@@ -117,7 +117,9 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
                 Text('お疲れさま！'),
               ],
             ),
-            content: Text('$_timerDurationMinutes分間、食欲に打ち勝ちました！\nこの調子で頑張ろう💪'),
+            content: Text(
+              '$_timerDurationMinutes分間我慢できた！ダイエット継続中🔥\nこの調子で頑張ろう💪',
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -163,7 +165,7 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '食欲を我慢する時間を設定しよう',
+                  'ダイエットモチベーションタイマー',
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 24),

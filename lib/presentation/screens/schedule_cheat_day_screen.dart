@@ -159,7 +159,7 @@ class _ScheduleCheatDayScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                '次のチートデイ',
+                                '次のご褒美日',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 12,

@@ -257,7 +257,7 @@ class _UploadScreenState extends ConsumerState<UploadScreen> {
                 controller: _titleController,
                 decoration: const InputDecoration(
                   labelText: '料理名',
-                  hintText: '例: 特盛り唐揚げ定食',
+                  hintText: '例: ご褒美ラーメン🍜',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {

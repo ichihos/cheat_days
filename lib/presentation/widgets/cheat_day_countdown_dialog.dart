@@ -121,7 +121,7 @@ class CheatDayCountdownDialog extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '思いっきり楽しもう！',
+            '今日はダイエットお休み！思いっきり食べよう！',
             style: TextStyle(
               color: Colors.white.withOpacity(0.9),
               fontSize: 14,
@@ -191,7 +191,7 @@ class CheatDayCountdownDialog extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          '今日も頑張ろう！💪',
+          'ご褒美まであと少し！今日もダイエット頑張ろう💪',
           style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
         ),
       ],
@@ -213,7 +213,7 @@ class CheatDayCountdownDialog extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'カレンダーから次のチートデイを\n設定してモチベーションUP！',
+          '次のご褒美を設定して\nダイエットのモチベーションUP！',
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
         ),

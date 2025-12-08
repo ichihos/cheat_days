@@ -48,5 +48,7 @@ class DefaultFirebaseOptions {
     projectId: 'chat-days',
     storageBucket: 'chat-days.firebasestorage.app',
     iosBundleId: 'com.ichihos.cheatdays',
+    iosClientId:
+        '868473732972-qmsvg7mu6umucccr90n44nslcj5dpgji.apps.googleusercontent.com',
   );
 }

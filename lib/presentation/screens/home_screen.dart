@@ -163,7 +163,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     icon: Icons.camera_alt_rounded,
                     iconColor: const Color(0xFFFF6B35),
                     title: '写真・動画を投稿',
-                    subtitle: '今日の食事をシェア',
+                    subtitle: 'ご褒美の食事を記録しよう！',
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
@@ -192,7 +192,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         const SizedBox(height: 12),
                         const Text(
-                          '今日はチートデイじゃないよ',
+                          '今日はダイエット継続日！',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -201,7 +201,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         const SizedBox(height: 4),
                         Text(
                           nextCheatDay != null
-                              ? '次のチートデイまであと${nextCheatDay.daysUntil}日！'
+                              ? 'ご褒美まであと${nextCheatDay.daysUntil}日！頑張ろう💪'
                               : 'チートデイを登録しよう！',
                           style: TextStyle(color: Colors.grey.shade600),
                         ),
