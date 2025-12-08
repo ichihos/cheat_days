@@ -29,6 +29,10 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
   Timer? _autoSwipeTimer;
   bool _isAutoPlaying = true;
 
+  // ユーザーインタラクション検出
+  bool _isUserTouching = false;
+  bool _isUserLongPressing = false;
+
   // タイマー機能
   bool _isTimerActive = false;
   int _timerDurationMinutes = 5;
@@ -52,7 +56,8 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
   void _startAutoSwipe() {
     _autoSwipeTimer?.cancel();
     _autoSwipeTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (!_isAutoPlaying) return;
+      // 自動再生がオフ、またはユーザーがタッチ中/長押し中の場合は自動スワイプしない
+      if (!_isAutoPlaying || _isUserTouching || _isUserLongPressing) return;
 
       final cheatDays = ref.read(cheatDaysProvider).value ?? [];
       if (cheatDays.isEmpty) return;
@@ -275,29 +280,55 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
                 );
               }
 
-              return PageView.builder(
-                controller: _pageController,
-                scrollDirection: Axis.vertical,
-                onPageChanged: (index) {
+              return Listener(
+                onPointerDown: (_) {
                   setState(() {
-                    _currentPage = index;
+                    _isUserTouching = true;
                   });
-                  // 隣接コンテンツをプリロード
-                  _precacheAdjacentImages(cheatDays, index);
                 },
-                itemCount: cheatDays.length,
-                itemBuilder: (context, index) {
-                  final cheatDay = cheatDays[index];
-                  return _FeedItem(
-                    cheatDay: cheatDay,
-                    isActive: index == _currentPage,
-                    isAutoPlaying: _isAutoPlaying,
-                    currentUserId: currentUser.value?.uid ?? '',
-                    onLike: () => _toggleLike(cheatDay),
-                    onShare: () => _share(cheatDay),
-                    onPause: _toggleAutoPlay,
-                  );
+                onPointerUp: (_) {
+                  setState(() {
+                    _isUserTouching = false;
+                  });
                 },
+                onPointerCancel: (_) {
+                  setState(() {
+                    _isUserTouching = false;
+                  });
+                },
+                child: PageView.builder(
+                  controller: _pageController,
+                  scrollDirection: Axis.vertical,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                    });
+                    // 隣接コンテンツをプリロード
+                    _precacheAdjacentImages(cheatDays, index);
+                  },
+                  itemCount: cheatDays.length,
+                  itemBuilder: (context, index) {
+                    final cheatDay = cheatDays[index];
+                    return _FeedItem(
+                      cheatDay: cheatDay,
+                      isActive: index == _currentPage,
+                      isPaused: _isUserLongPressing,
+                      currentUserId: currentUser.value?.uid ?? '',
+                      onLike: () => _toggleLike(cheatDay),
+                      onShare: () => _share(cheatDay),
+                      onLongPressStart: () {
+                        setState(() {
+                          _isUserLongPressing = true;
+                        });
+                      },
+                      onLongPressEnd: () {
+                        setState(() {
+                          _isUserLongPressing = false;
+                        });
+                      },
+                    );
+                  },
+                ),
               );
             },
             loading:
@@ -537,20 +568,22 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
 class _FeedItem extends ConsumerStatefulWidget {
   final CheatDay cheatDay;
   final bool isActive;
-  final bool isAutoPlaying;
+  final bool isPaused;
   final String currentUserId;
   final VoidCallback onLike;
   final VoidCallback onShare;
-  final VoidCallback onPause;
+  final VoidCallback onLongPressStart;
+  final VoidCallback onLongPressEnd;
 
   const _FeedItem({
     required this.cheatDay,
     required this.isActive,
-    required this.isAutoPlaying,
+    required this.isPaused,
     required this.currentUserId,
     required this.onLike,
     required this.onShare,
-    required this.onPause,
+    required this.onLongPressStart,
+    required this.onLongPressEnd,
   });
 
   @override
@@ -558,7 +591,6 @@ class _FeedItem extends ConsumerStatefulWidget {
 }
 
 class _FeedItemState extends ConsumerState<_FeedItem> {
-  bool _isPaused = false;
   bool _showDetails = false;
   bool _isSaved = false;
 
@@ -627,23 +659,11 @@ class _FeedItemState extends ConsumerState<_FeedItem> {
     final isLiked = widget.cheatDay.likedBy.contains(widget.currentUserId);
 
     return GestureDetector(
-      onTap: () {
-        // 自動スワイプを停止
-        if (widget.isAutoPlaying) {
-          widget.onPause();
-        }
-        setState(() {
-          _isPaused = !_isPaused;
-        });
+      onLongPressStart: (_) {
+        widget.onLongPressStart();
       },
-      onLongPress: () {
-        // 長押しで一時停止（自動スワイプも停止）
-        if (widget.isAutoPlaying) {
-          widget.onPause();
-        }
-        setState(() {
-          _isPaused = true;
-        });
+      onLongPressEnd: (_) {
+        widget.onLongPressEnd();
       },
       child: Stack(
         fit: StackFit.expand,
@@ -652,7 +672,7 @@ class _FeedItemState extends ConsumerState<_FeedItem> {
           MediaPlayerWidget(
             cheatDay: widget.cheatDay,
             isActive: widget.isActive,
-            isPaused: _isPaused,
+            isPaused: widget.isPaused,
           ),
 
           // グラデーションオーバーレイ
@@ -797,12 +817,6 @@ class _FeedItemState extends ConsumerState<_FeedItem> {
                   });
                 },
               ),
-            ),
-
-          // 一時停止アイコン
-          if (_isPaused)
-            const Center(
-              child: Icon(Icons.play_arrow, size: 80, color: Colors.white70),
             ),
         ],
       ),
