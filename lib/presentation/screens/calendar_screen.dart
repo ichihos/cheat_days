@@ -1,12 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../domain/entities/cheat_day.dart';
 import '../../domain/entities/scheduled_cheat_day.dart';
+import '../../domain/entities/weight_record.dart';
 import '../providers/cheat_day_provider.dart';
 import '../providers/scheduled_cheat_day_provider.dart';
+import '../providers/weight_provider.dart';
 import 'schedule_cheat_day_screen.dart';
 
 class CalendarScreen extends ConsumerStatefulWidget {
@@ -402,6 +406,21 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       ],
                     ),
                   ),
+                  // 体重グラフボタン
+                  IconButton(
+                    onPressed: () => _showWeightChart(),
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.show_chart_rounded,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -589,6 +608,28 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                                   ),
                                 ),
                             ],
+                          ),
+                        ),
+                      const SizedBox(height: 12),
+                      // 体重記録ボタン
+                      if (_selectedDay != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showWeightRecordDialog(_selectedDay!),
+                            icon: const Icon(Icons.monitor_weight_rounded, size: 20),
+                            label: const Text('体重を記録'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
                           ),
                         ),
                       const SizedBox(height: 8),
@@ -862,6 +903,540 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ],
             ),
           ),
+    );
+  }
+
+  /// 体重記録ダイアログを表示
+  void _showWeightRecordDialog(DateTime selectedDate) {
+    final weightController = TextEditingController();
+    final memoController = TextEditingController();
+
+    // 既存の体重記録を取得
+    ref.read(weightRecordsProvider.notifier).getWeightRecordByDate(selectedDate).then(
+      (existingRecord) {
+        if (existingRecord != null && mounted) {
+          weightController.text = existingRecord.weight.toString();
+          memoController.text = existingRecord.memo ?? '';
+        }
+      },
+    );
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.monitor_weight_rounded,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '体重を記録',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '${selectedDate.month}月${selectedDate.day}日',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                '体重（kg）',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: weightController,
+                decoration: InputDecoration(
+                  hintText: '例：65.5',
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: const Icon(Icons.monitor_weight_rounded),
+                  suffixText: 'kg',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'メモ（任意）',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: memoController,
+                decoration: InputDecoration(
+                  hintText: '例：朝食前、運動後...',
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  prefixIcon: const Icon(Icons.note_rounded),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final weightText = weightController.text.trim();
+                    if (weightText.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('体重を入力してください')),
+                      );
+                      return;
+                    }
+
+                    final weight = double.tryParse(weightText);
+                    if (weight == null || weight <= 0 || weight > 500) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('正しい体重を入力してください')),
+                      );
+                      return;
+                    }
+
+                    try {
+                      await ref.read(weightRecordsProvider.notifier).addWeightRecord(
+                        weight: weight,
+                        date: selectedDate,
+                        memo: memoController.text.trim().isNotEmpty
+                            ? memoController.text.trim()
+                            : null,
+                      );
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('体重を記録しました！'),
+                            backgroundColor: Colors.blue,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('エラー: $e')),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    '記録する',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('キャンセル'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 体重グラフを表示
+  void _showWeightChart() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.show_chart_rounded,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '体重の変化',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '過去30日間の記録',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final weightRecordsAsync = ref.watch(weightRecordsProvider);
+                  return weightRecordsAsync.when(
+                    data: (records) {
+                      if (records.isEmpty) {
+                        return const Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.show_chart_rounded,
+                                size: 64,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                '体重の記録がありません',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      return _WeightChartWidget(records: records);
+                    },
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(color: Colors.blue),
+                    ),
+                    error: (error, stack) => Center(
+                      child: Text('エラー: $error'),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 体重グラフウィジェット
+class _WeightChartWidget extends StatelessWidget {
+  final List<WeightRecord> records;
+
+  const _WeightChartWidget({required this.records});
+
+  @override
+  Widget build(BuildContext context) {
+    // 過去30日間のデータのみを表示
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+    final recentRecords = records
+        .where((r) => r.date.isAfter(thirtyDaysAgo))
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    if (recentRecords.isEmpty) {
+      return const Center(
+        child: Text('過去30日間の記録がありません'),
+      );
+    }
+
+    final minWeight = recentRecords.map((r) => r.weight).reduce((a, b) => a < b ? a : b);
+    final maxWeight = recentRecords.map((r) => r.weight).reduce((a, b) => a > b ? a : b);
+    final weightDiff = maxWeight - minWeight;
+    final yMin = minWeight - (weightDiff * 0.1).clamp(1, 5);
+    final yMax = maxWeight + (weightDiff * 0.1).clamp(1, 5);
+
+    final spots = recentRecords.asMap().entries.map((entry) {
+      return FlSpot(entry.key.toDouble(), entry.value.weight);
+    }).toList();
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 統計情報
+          Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  label: '最新',
+                  value: '${recentRecords.last.weight.toStringAsFixed(1)}kg',
+                  color: Colors.blue,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  label: '最高',
+                  value: '${maxWeight.toStringAsFixed(1)}kg',
+                  color: Colors.red,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  label: '最低',
+                  value: '${minWeight.toStringAsFixed(1)}kg',
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // グラフ
+          Expanded(
+            child: LineChart(
+              LineChartData(
+                minY: yMin,
+                maxY: yMax,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: Colors.blue,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 4,
+                          color: Colors.blue,
+                          strokeWidth: 2,
+                          strokeColor: Colors.white,
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: Colors.blue.withOpacity(0.1),
+                    ),
+                  ),
+                ],
+                titlesData: FlTitlesData(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) {
+                        return Text(
+                          '${value.toStringAsFixed(0)}kg',
+                          style: const TextStyle(fontSize: 10),
+                        );
+                      },
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      getTitlesWidget: (value, meta) {
+                        if (value.toInt() >= recentRecords.length) return const Text('');
+                        final record = recentRecords[value.toInt()];
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            '${record.date.month}/${record.date.day}',
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: Colors.grey.withOpacity(0.2),
+                      strokeWidth: 1,
+                    );
+                  },
+                ),
+                borderData: FlBorderData(
+                  show: true,
+                  border: Border(
+                    left: BorderSide(color: Colors.grey.shade300),
+                    bottom: BorderSide(color: Colors.grey.shade300),
+                  ),
+                ),
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((spot) {
+                        final record = recentRecords[spot.x.toInt()];
+                        return LineTooltipItem(
+                          '${record.weight.toStringAsFixed(1)}kg\n${record.date.month}/${record.date.day}',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 統計カード
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
