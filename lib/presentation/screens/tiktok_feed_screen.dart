@@ -56,7 +56,7 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
 
   void _startAutoSwipe() {
     _autoSwipeTimer?.cancel();
-    _autoSwipeTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    _autoSwipeTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       // 自動再生がオフ、ユーザーがタッチ中/長押し中、モーダルが開いている場合は自動スワイプしない
       if (!_isAutoPlaying ||
           _isUserTouching ||

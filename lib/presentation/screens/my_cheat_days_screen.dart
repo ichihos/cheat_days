@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../providers/cheat_day_provider.dart';
 import '../providers/auth_provider.dart';
+import '../../domain/entities/cheat_day.dart';
 import 'auth/login_screen.dart';
+import 'cheat_day_detail_screen.dart';
 
 class MyCheatDaysScreen extends ConsumerWidget {
   const MyCheatDaysScreen({super.key});
@@ -230,7 +231,8 @@ class MyCheatDaysScreen extends ConsumerWidget {
                         ? allCheatDays
                             .where((cd) => cd.userId == currentUser.value!.uid)
                             .toList()
-                        : <dynamic>[];
+                            .cast<CheatDay>()
+                        : <CheatDay>[];
                 if (cheatDays.isEmpty) {
                   return SliverFillRemaining(
                     child: Center(
@@ -284,8 +286,19 @@ class MyCheatDaysScreen extends ConsumerWidget {
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final cheatDay = cheatDays[index];
                       return GestureDetector(
-                        onTap:
-                            () => _showCheatDayDetail(context, ref, cheatDay),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => CheatDayDetailScreen(
+                                    cheatDay: cheatDay,
+                                    cheatDays: cheatDays,
+                                    initialIndex: index,
+                                  ),
+                            ),
+                          );
+                        },
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
@@ -326,165 +339,6 @@ class MyCheatDaysScreen extends ConsumerWidget {
     return cheatDays
         .where((c) => c.date.year == now.year && c.date.month == now.month)
         .length;
-  }
-
-  void _showCheatDayDetail(
-    BuildContext context,
-    WidgetRef ref,
-    dynamic cheatDay,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder:
-          (context) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
-                    cheatDay.mediaPath,
-                    height: 300,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        cheatDay.description,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today_rounded,
-                            size: 16,
-                            color: Colors.grey.shade500,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            DateFormat('yyyy年M月d日').format(cheatDay.date),
-                            style: TextStyle(color: Colors.grey.shade600),
-                          ),
-                          const Spacer(),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.favorite_rounded,
-                                size: 16,
-                                color: Color(0xFFFF6B35),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${cheatDay.likesCount}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              _showDeleteConfirmation(context, ref, cheatDay);
-                            },
-                            icon: const Icon(
-                              Icons.delete_outline_rounded,
-                              color: Colors.red,
-                            ),
-                            label: const Text(
-                              '削除',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Colors.red),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('閉じる'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-    );
-  }
-
-  void _showDeleteConfirmation(
-    BuildContext context,
-    WidgetRef ref,
-    dynamic cheatDay,
-  ) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: const Text('削除確認'),
-            content: const Text('この投稿を削除しますか？'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('キャンセル'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ref
-                      .read(cheatDaysProvider.notifier)
-                      .deleteCheatDay(cheatDay.id);
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('削除'),
-              ),
-            ],
-          ),
-    );
   }
 }
 
