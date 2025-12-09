@@ -11,7 +11,9 @@ class FirebaseWishlistRepository implements WishlistRepository {
   @override
   Future<List<WishlistItem>> getAllWishlistItems(String userId) async {
     final items = await firestoreService.getUserWishlist(userId);
-    return items.cast<WishlistItem>();
+    return items
+        .map((item) => WishlistItemModel.fromJson(item as Map<String, dynamic>))
+        .toList();
   }
 
   @override
