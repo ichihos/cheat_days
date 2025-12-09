@@ -32,6 +32,7 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
   // ユーザーインタラクション検出
   bool _isUserTouching = false;
   bool _isUserLongPressing = false;
+  bool _isModalOpen = false; // モーダル/ダイアログが開いている時
 
   // タイマー機能
   bool _isTimerActive = false;
@@ -56,8 +57,11 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
   void _startAutoSwipe() {
     _autoSwipeTimer?.cancel();
     _autoSwipeTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      // 自動再生がオフ、またはユーザーがタッチ中/長押し中の場合は自動スワイプしない
-      if (!_isAutoPlaying || _isUserTouching || _isUserLongPressing) return;
+      // 自動再生がオフ、ユーザーがタッチ中/長押し中、モーダルが開いている場合は自動スワイプしない
+      if (!_isAutoPlaying ||
+          _isUserTouching ||
+          _isUserLongPressing ||
+          _isModalOpen) return;
 
       final cheatDays = ref.read(cheatDaysProvider).value ?? [];
       if (cheatDays.isEmpty) return;
@@ -124,6 +128,9 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
   }
 
   void _showTimerCompleteDialog() {
+    setState(() {
+      _isModalOpen = true;
+    });
     showDialog(
       context: context,
       builder:
@@ -147,7 +154,11 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
               ),
             ],
           ),
-    );
+    ).whenComplete(() {
+      setState(() {
+        _isModalOpen = false;
+      });
+    });
   }
 
   String _formatTime(int seconds) {
@@ -157,6 +168,9 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
   }
 
   void _showTimerDialog() {
+    setState(() {
+      _isModalOpen = true;
+    });
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -225,7 +239,11 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
               ],
             ),
           ),
-    );
+    ).whenComplete(() {
+      setState(() {
+        _isModalOpen = false;
+      });
+    });
   }
 
   @override
@@ -324,6 +342,21 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
                       onLongPressEnd: () {
                         setState(() {
                           _isUserLongPressing = false;
+                        });
+                      },
+                      onShowComments: () {
+                        setState(() {
+                          _isModalOpen = true;
+                        });
+                      },
+                      onHideComments: () {
+                        setState(() {
+                          _isModalOpen = false;
+                        });
+                      },
+                      onDetailsChanged: (isOpen) {
+                        setState(() {
+                          _isModalOpen = isOpen;
                         });
                       },
                     );
@@ -519,7 +552,13 @@ class _TikTokFeedScreenState extends ConsumerState<TikTokFeedScreen> {
   }
 
   Future<void> _share(CheatDay cheatDay) async {
+    setState(() {
+      _isModalOpen = true;
+    });
     await Share.share('チェック！「${cheatDay.title}」を見てみて！', subject: 'チートデイズで共有');
+    setState(() {
+      _isModalOpen = false;
+    });
 
     // 楽観的UI更新: 共有カウントを即座に更新
     final currentCheatDays = ref.read(cheatDaysProvider).value ?? [];
@@ -547,6 +586,9 @@ class _FeedItem extends ConsumerStatefulWidget {
   final VoidCallback onShare;
   final VoidCallback onLongPressStart;
   final VoidCallback onLongPressEnd;
+  final VoidCallback onShowComments;
+  final VoidCallback onHideComments;
+  final ValueChanged<bool> onDetailsChanged;
 
   const _FeedItem({
     required this.cheatDay,
@@ -557,6 +599,9 @@ class _FeedItem extends ConsumerStatefulWidget {
     required this.onShare,
     required this.onLongPressStart,
     required this.onLongPressEnd,
+    required this.onShowComments,
+    required this.onHideComments,
+    required this.onDetailsChanged,
   });
 
   @override
@@ -715,9 +760,11 @@ class _FeedItemState extends ConsumerState<_FeedItem> {
                     icon: Icons.info_outline,
                     label: '詳細',
                     onTap: () {
+                      final newValue = !_showDetails;
                       setState(() {
-                        _showDetails = !_showDetails;
+                        _showDetails = newValue;
                       });
+                      widget.onDetailsChanged(newValue);
                     },
                   ),
                 ],
@@ -788,6 +835,7 @@ class _FeedItemState extends ConsumerState<_FeedItem> {
                   setState(() {
                     _showDetails = false;
                   });
+                  widget.onDetailsChanged(false);
                 },
               ),
             ),
@@ -797,12 +845,15 @@ class _FeedItemState extends ConsumerState<_FeedItem> {
   }
 
   void _showComments(BuildContext context) {
+    widget.onShowComments();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _CommentsSheet(cheatDay: widget.cheatDay),
-    );
+    ).whenComplete(() {
+      widget.onHideComments();
+    });
   }
 
   String _formatCount(int count) {
