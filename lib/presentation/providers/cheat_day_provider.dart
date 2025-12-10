@@ -112,6 +112,10 @@ class CheatDaysNotifier extends StateNotifier<AsyncValue<List<CheatDay>>> {
     required DateTime date,
     required String userId,
     required String userName,
+    String? userPhotoUrl,
+    String? restaurantName,
+    String? restaurantLocation,
+    String? recipeText,
   }) async {
     try {
       final imagePath = await _localStorage.saveImage(imageFile);
@@ -122,8 +126,23 @@ class CheatDaysNotifier extends StateNotifier<AsyncValue<List<CheatDay>>> {
         date: date,
         userId: userId,
         userName: userName,
+        userPhotoUrl: userPhotoUrl,
+        hasRestaurant: restaurantName != null && restaurantName.isNotEmpty,
+        hasRecipe: recipeText != null && recipeText.isNotEmpty,
+        restaurantName: restaurantName,
+        restaurantLocation: restaurantLocation,
+        recipeText: recipeText,
       );
       await _repository.addCheatDay(cheatDay);
+      await loadCheatDays();
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+    }
+  }
+
+  Future<void> updateCheatDay(CheatDay cheatDay) async {
+    try {
+      await _repository.updateCheatDay(cheatDay);
       await loadCheatDays();
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);

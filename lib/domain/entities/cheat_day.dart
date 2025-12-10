@@ -17,6 +17,11 @@ class CheatDay {
   final bool isPublic;
   final bool hasRecipe;
   final bool hasRestaurant;
+  // 店情報
+  final String? restaurantName;
+  final String? restaurantLocation;
+  // レシピ情報
+  final String? recipeText;
 
   CheatDay({
     required this.id,
@@ -35,6 +40,9 @@ class CheatDay {
     this.isPublic = true,
     this.hasRecipe = false,
     this.hasRestaurant = false,
+    this.restaurantName,
+    this.restaurantLocation,
+    this.recipeText,
   });
 
   CheatDay copyWith({
@@ -54,6 +62,9 @@ class CheatDay {
     bool? isPublic,
     bool? hasRecipe,
     bool? hasRestaurant,
+    String? restaurantName,
+    String? restaurantLocation,
+    String? recipeText,
   }) {
     return CheatDay(
       id: id ?? this.id,
@@ -72,6 +83,9 @@ class CheatDay {
       isPublic: isPublic ?? this.isPublic,
       hasRecipe: hasRecipe ?? this.hasRecipe,
       hasRestaurant: hasRestaurant ?? this.hasRestaurant,
+      restaurantName: restaurantName ?? this.restaurantName,
+      restaurantLocation: restaurantLocation ?? this.restaurantLocation,
+      recipeText: recipeText ?? this.recipeText,
     );
   }
 
@@ -100,6 +114,9 @@ class CheatDay {
       'isPublic': isPublic,
       'hasRecipe': hasRecipe,
       'hasRestaurant': hasRestaurant,
+      'restaurantName': restaurantName,
+      'restaurantLocation': restaurantLocation,
+      'recipeText': recipeText,
     };
   }
 
@@ -124,6 +141,9 @@ class CheatDay {
       isPublic: json['isPublic'] as bool? ?? true,
       hasRecipe: json['hasRecipe'] as bool? ?? false,
       hasRestaurant: json['hasRestaurant'] as bool? ?? false,
+      restaurantName: json['restaurantName'] as String?,
+      restaurantLocation: json['restaurantLocation'] as String?,
+      recipeText: json['recipeText'] as String?,
     );
   }
 }

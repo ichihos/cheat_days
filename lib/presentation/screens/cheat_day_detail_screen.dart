@@ -73,6 +73,7 @@ class _CheatDayDetailScreenState extends ConsumerState<CheatDayDetailScreen> {
                 onLike: () => _toggleLike(cheatDay),
                 onShare: () => _share(cheatDay),
                 onDelete: () => _showDeleteConfirmation(cheatDay),
+                onEdit: (updatedCheatDay) => _updateCheatDay(updatedCheatDay),
               );
             },
           ),
@@ -221,6 +222,10 @@ class _CheatDayDetailScreenState extends ConsumerState<CheatDayDetailScreen> {
           ),
     );
   }
+
+  Future<void> _updateCheatDay(CheatDay updatedCheatDay) async {
+    await ref.read(cheatDaysProvider.notifier).updateCheatDay(updatedCheatDay);
+  }
 }
 
 class _DetailFeedItem extends ConsumerStatefulWidget {
@@ -230,6 +235,7 @@ class _DetailFeedItem extends ConsumerStatefulWidget {
   final VoidCallback onLike;
   final VoidCallback onShare;
   final VoidCallback onDelete;
+  final Function(CheatDay) onEdit;
 
   const _DetailFeedItem({
     required this.cheatDay,
@@ -238,6 +244,7 @@ class _DetailFeedItem extends ConsumerStatefulWidget {
     required this.onLike,
     required this.onShare,
     required this.onDelete,
+    required this.onEdit,
   });
 
   @override
@@ -381,13 +388,25 @@ class _DetailFeedItemState extends ConsumerState<_DetailFeedItem> {
               ),
               const SizedBox(height: 20),
 
-              // 削除
-              _ActionButton(
-                icon: Icons.delete_outline_rounded,
-                label: '削除',
-                color: Colors.red.shade300,
-                onTap: widget.onDelete,
-              ),
+              // 編集（自分の投稿のみ）
+              if (widget.cheatDay.userId == widget.currentUserId) ...[
+                _ActionButton(
+                  icon: Icons.edit_rounded,
+                  label: '編集',
+                  color: const Color(0xFFFF6B35),
+                  onTap: () => _showEditDialog(context),
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              // 削除（自分の投稿のみ）
+              if (widget.cheatDay.userId == widget.currentUserId)
+                _ActionButton(
+                  icon: Icons.delete_outline_rounded,
+                  label: '削除',
+                  color: Colors.red.shade300,
+                  onTap: widget.onDelete,
+                ),
             ],
           ),
         ),
@@ -464,6 +483,22 @@ class _DetailFeedItemState extends ConsumerState<_DetailFeedItem> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _CommentsSheet(cheatDay: widget.cheatDay),
+    );
+  }
+
+  void _showEditDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => _EditCheatDaySheet(
+            cheatDay: widget.cheatDay,
+            onSave: (updatedCheatDay) {
+              widget.onEdit(updatedCheatDay);
+              Navigator.pop(context);
+            },
+          ),
     );
   }
 
@@ -813,5 +848,311 @@ class _CommentsSheetState extends ConsumerState<_CommentsSheet> {
         }
       }
     }
+  }
+}
+
+/// 編集用ボトムシート
+class _EditCheatDaySheet extends StatefulWidget {
+  final CheatDay cheatDay;
+  final Function(CheatDay) onSave;
+
+  const _EditCheatDaySheet({required this.cheatDay, required this.onSave});
+
+  @override
+  State<_EditCheatDaySheet> createState() => _EditCheatDaySheetState();
+}
+
+class _EditCheatDaySheetState extends State<_EditCheatDaySheet> {
+  late TextEditingController _titleController;
+  late TextEditingController _restaurantNameController;
+  late TextEditingController _restaurantLocationController;
+  late TextEditingController _recipeController;
+  late bool _hasRestaurant;
+  late bool _hasRecipe;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.cheatDay.title);
+    _restaurantNameController = TextEditingController(
+      text: widget.cheatDay.restaurantName ?? '',
+    );
+    _restaurantLocationController = TextEditingController(
+      text: widget.cheatDay.restaurantLocation ?? '',
+    );
+    _recipeController = TextEditingController(
+      text: widget.cheatDay.recipeText ?? '',
+    );
+    _hasRestaurant = widget.cheatDay.hasRestaurant;
+    _hasRecipe = widget.cheatDay.hasRecipe;
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _restaurantNameController.dispose();
+    _restaurantLocationController.dispose();
+    _recipeController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('料理名を入力してください')));
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    final updatedCheatDay = widget.cheatDay.copyWith(
+      title: _titleController.text,
+      hasRestaurant: _hasRestaurant && _restaurantNameController.text.isNotEmpty,
+      hasRecipe: _hasRecipe && _recipeController.text.isNotEmpty,
+      restaurantName: _hasRestaurant ? _restaurantNameController.text : null,
+      restaurantLocation:
+          _hasRestaurant ? _restaurantLocationController.text : null,
+      recipeText: _hasRecipe ? _recipeController.text : null,
+    );
+
+    widget.onSave(updatedCheatDay);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          // ハンドル
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // ヘッダー
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+                const Expanded(
+                  child: Text(
+                    '投稿を編集',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                TextButton(
+                  onPressed: _isSaving ? null : _save,
+                  child:
+                      _isSaving
+                          ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : const Text(
+                            '保存',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFFF6B35),
+                            ),
+                          ),
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(),
+
+          // フォーム
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 料理名
+                  const Text(
+                    '料理名',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      hintText: '料理名を入力',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFFF6B35),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // お店情報
+                  _buildExpandableSection(
+                    title: 'お店情報',
+                    icon: Icons.store_rounded,
+                    isExpanded: _hasRestaurant,
+                    onToggle: (value) {
+                      setState(() {
+                        _hasRestaurant = value;
+                      });
+                    },
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _restaurantNameController,
+                          decoration: InputDecoration(
+                            labelText: '店名',
+                            hintText: '例: 麺屋らーめん',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.store_rounded),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _restaurantLocationController,
+                          decoration: InputDecoration(
+                            labelText: '場所（市区町村）',
+                            hintText: '例: 東京都渋谷区',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            prefixIcon: const Icon(Icons.location_on_rounded),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // レシピ
+                  _buildExpandableSection(
+                    title: 'レシピ',
+                    icon: Icons.menu_book_rounded,
+                    isExpanded: _hasRecipe,
+                    onToggle: (value) {
+                      setState(() {
+                        _hasRecipe = value;
+                      });
+                    },
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _recipeController,
+                          decoration: InputDecoration(
+                            labelText: 'レシピ・作り方',
+                            hintText: '材料や作り方を自由に記述',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            alignLabelWithHint: true,
+                          ),
+                          maxLines: 5,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandableSection({
+    required String title,
+    required IconData icon,
+    required bool isExpanded,
+    required ValueChanged<bool> onToggle,
+    required Widget child,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isExpanded ? const Color(0xFFFF6B35) : Colors.grey.shade300,
+          width: isExpanded ? 2 : 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () => onToggle(!isExpanded),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6B35).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon, color: const Color(0xFFFF6B35)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Switch(
+                    value: isExpanded,
+                    onChanged: onToggle,
+                    activeColor: const Color(0xFFFF6B35),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (isExpanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: child,
+            ),
+        ],
+      ),
+    );
   }
 }
