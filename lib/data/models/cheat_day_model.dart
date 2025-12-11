@@ -18,14 +18,19 @@ class CheatDayModel extends CheatDay {
     super.isPublic = true,
     super.hasRecipe = false,
     super.hasRestaurant = false,
+    super.restaurantName,
+    super.restaurantLocation,
+    super.recipeText,
   });
 
   factory CheatDayModel.fromJson(Map<String, dynamic> json) {
     return CheatDayModel(
       id: json['id'] as String,
       title: json['title'] as String? ?? json['description'] as String? ?? '',
-      mediaType: json['mediaType'] == 'video' ? MediaType.video : MediaType.image,
-      mediaPath: json['mediaPath'] as String? ?? json['imagePath'] as String? ?? '',
+      mediaType:
+          json['mediaType'] == 'video' ? MediaType.video : MediaType.image,
+      mediaPath:
+          json['mediaPath'] as String? ?? json['imagePath'] as String? ?? '',
       videoDurationSeconds: json['videoDurationSeconds'] as int?,
       date: DateTime.parse(json['date'] as String),
       userId: json['userId'] as String,
@@ -38,6 +43,9 @@ class CheatDayModel extends CheatDay {
       isPublic: json['isPublic'] as bool? ?? true,
       hasRecipe: json['hasRecipe'] as bool? ?? false,
       hasRestaurant: json['hasRestaurant'] as bool? ?? false,
+      restaurantName: json['restaurantName'] as String?,
+      restaurantLocation: json['restaurantLocation'] as String?,
+      recipeText: json['recipeText'] as String?,
     );
   }
 
@@ -59,6 +67,9 @@ class CheatDayModel extends CheatDay {
       'isPublic': isPublic,
       'hasRecipe': hasRecipe,
       'hasRestaurant': hasRestaurant,
+      'restaurantName': restaurantName,
+      'restaurantLocation': restaurantLocation,
+      'recipeText': recipeText,
     };
   }
 
@@ -80,6 +91,9 @@ class CheatDayModel extends CheatDay {
       isPublic: entity.isPublic,
       hasRecipe: entity.hasRecipe,
       hasRestaurant: entity.hasRestaurant,
+      restaurantName: entity.restaurantName,
+      restaurantLocation: entity.restaurantLocation,
+      recipeText: entity.recipeText,
     );
   }
 }

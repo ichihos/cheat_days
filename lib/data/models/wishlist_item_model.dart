@@ -15,12 +15,22 @@ class WishlistItemModel extends WishlistItem {
   });
 
   factory WishlistItemModel.fromJson(Map<String, dynamic> json) {
+    WishlistItemType type;
+    switch (json['type']) {
+      case 'restaurant':
+        type = WishlistItemType.restaurant;
+        break;
+      case 'cheatday':
+        type = WishlistItemType.cheatday;
+        break;
+      default:
+        type = WishlistItemType.recipe;
+    }
+
     return WishlistItemModel(
       id: json['id'] as String,
       userId: json['userId'] as String,
-      type: json['type'] == 'restaurant'
-          ? WishlistItemType.restaurant
-          : WishlistItemType.recipe,
+      type: type,
       referenceId: json['referenceId'] as String,
       cheatDayId: json['cheatDayId'] as String,
       title: json['title'] as String,
@@ -32,10 +42,23 @@ class WishlistItemModel extends WishlistItem {
   }
 
   Map<String, dynamic> toJson() {
+    String typeString;
+    switch (type) {
+      case WishlistItemType.restaurant:
+        typeString = 'restaurant';
+        break;
+      case WishlistItemType.cheatday:
+        typeString = 'cheatday';
+        break;
+      case WishlistItemType.recipe:
+        typeString = 'recipe';
+        break;
+    }
+
     return {
       'id': id,
       'userId': userId,
-      'type': type == WishlistItemType.restaurant ? 'restaurant' : 'recipe',
+      'type': typeString,
       'referenceId': referenceId,
       'cheatDayId': cheatDayId,
       'title': title,
