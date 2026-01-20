@@ -6,10 +6,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -50,5 +47,16 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.ichihos.cheatdays',
     iosClientId:
         '868473732972-qmsvg7mu6umucccr90n44nslcj5dpgji.apps.googleusercontent.com',
+  );
+
+  // Web configuration - you may need to create a web app in Firebase Console
+  // and update these values with the actual ones from your Firebase project
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyA5pQoVwrUdgG3F6wdDyoW_2YHixdKVZIU',
+    appId: '1:868473732972:web:a54d71297db30cc66b3d49',
+    messagingSenderId: '868473732972',
+    projectId: 'chat-days',
+    storageBucket: 'chat-days.firebasestorage.app',
+    authDomain: 'chat-days.firebaseapp.com',
   );
 }
