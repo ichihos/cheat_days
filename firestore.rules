@@ -23,7 +23,9 @@ service cloud.firestore {
     // I will add a placeholder for Admin UID check.
     match /recipes/{recipeId} {
       allow read: if true; // Public read is fine for recipes
-      allow write: if isAuthenticated() && request.auth.token.email == 'admin@messie.app'; // Example admin check
+      // For development: allow any authenticated user
+      // TODO: In production, restrict to specific admin emails or use custom claims
+      allow write: if isAuthenticated();
     }
 
     // Users: Strict owner access

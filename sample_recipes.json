@@ -1,0 +1,1279 @@
+{
+    "recipes": [
+        {
+            "name": "チキン南蛮",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "japanese",
+            "timeMinutes": 30,
+            "costYen": 500,
+            "difficulty": 2,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 650,
+            "ingredients": [
+                {
+                    "name": "鶏もも肉",
+                    "amount": "300",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "卵",
+                    "amount": "2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "玉ねぎ",
+                    "amount": "1/2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "酢",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "砂糖",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "マヨネーズ",
+                    "amount": "大さじ3",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "鶏肉を一口大に切り、塩胡椒をふる",
+                "溶き卵にくぐらせ、170度の油で揚げる",
+                "酢、砂糖、醤油で甘酢タレを作る",
+                "揚げた鶏肉を甘酢タレに絡める",
+                "タルタルソースをかけて完成"
+            ],
+            "tags": [
+                "ガッツリ",
+                "定番",
+                "人気",
+                "揚げ物"
+            ]
+        },
+        {
+            "name": "豚肉とキャベツの味噌炒め",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "japanese",
+            "timeMinutes": 15,
+            "costYen": 350,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "winter"
+            ],
+            "calories": 450,
+            "ingredients": [
+                {
+                    "name": "豚バラ肉",
+                    "amount": "200",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "キャベツ",
+                    "amount": "1/4",
+                    "unit": "玉",
+                    "isMain": false
+                },
+                {
+                    "name": "味噌",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "みりん",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "にんにく",
+                    "amount": "1",
+                    "unit": "片",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "豚肉とキャベツを一口大に切る",
+                "フライパンでにんにくを炒め、香りが出たら豚肉を入れる",
+                "肉の色が変わったらキャベツを加える",
+                "味噌とみりんを合わせたタレを加えて炒め合わせる"
+            ],
+            "tags": [
+                "時短",
+                "節約",
+                "ご飯が進む"
+            ]
+        },
+        {
+            "name": "鮭の塩焼き",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "japanese",
+            "timeMinutes": 20,
+            "costYen": 400,
+            "difficulty": 1,
+            "seasons": [
+                "fall",
+                "winter"
+            ],
+            "calories": 280,
+            "ingredients": [
+                {
+                    "name": "鮭切り身",
+                    "amount": "2",
+                    "unit": "切れ",
+                    "isMain": true
+                },
+                {
+                    "name": "塩",
+                    "amount": "少々",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "大根おろし",
+                    "amount": "適量",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "レモン",
+                    "amount": "1/4",
+                    "unit": "個",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "鮭に塩をふり、10分ほど置く",
+                "水気を拭き取り、グリルで焼く",
+                "大根おろしとレモンを添えて完成"
+            ],
+            "tags": [
+                "定番",
+                "ヘルシー",
+                "和食"
+            ]
+        },
+        {
+            "name": "麻婆豆腐",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "chinese",
+            "timeMinutes": 20,
+            "costYen": 300,
+            "difficulty": 2,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 380,
+            "ingredients": [
+                {
+                    "name": "木綿豆腐",
+                    "amount": "1",
+                    "unit": "丁",
+                    "isMain": true
+                },
+                {
+                    "name": "豚ひき肉",
+                    "amount": "150",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "長ねぎ",
+                    "amount": "1/2",
+                    "unit": "本",
+                    "isMain": false
+                },
+                {
+                    "name": "豆板醤",
+                    "amount": "小さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "甜麺醤",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "鶏ガラスープ",
+                    "amount": "150",
+                    "unit": "ml",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "豆腐を2cm角に切り、軽く水切りする",
+                "ねぎはみじん切りにする",
+                "フライパンでひき肉を炒め、豆板醤と甜麺醤を加える",
+                "鶏ガラスープを加え、豆腐を入れて煮込む",
+                "水溶き片栗粉でとろみをつけ、ねぎを散らす"
+            ],
+            "tags": [
+                "中華",
+                "ご飯が進む",
+                "辛い"
+            ]
+        },
+        {
+            "name": "親子丼",
+            "imageUrl": "",
+            "category": "rice",
+            "cuisine": "japanese",
+            "timeMinutes": 20,
+            "costYen": 350,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 580,
+            "ingredients": [
+                {
+                    "name": "鶏もも肉",
+                    "amount": "150",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "卵",
+                    "amount": "2",
+                    "unit": "個",
+                    "isMain": true
+                },
+                {
+                    "name": "玉ねぎ",
+                    "amount": "1/2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "だし汁",
+                    "amount": "100",
+                    "unit": "ml",
+                    "isMain": false
+                },
+                {
+                    "name": "醤油",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "みりん",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "ご飯",
+                    "amount": "2",
+                    "unit": "膳",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "鶏肉を一口大に、玉ねぎは薄切りにする",
+                "だし汁、醤油、みりんを鍋で煮立てる",
+                "鶏肉と玉ねぎを入れて火を通す",
+                "溶き卵を回し入れ、半熟で火を止める",
+                "ご飯の上に盛り付けて完成"
+            ],
+            "tags": [
+                "丼もの",
+                "定番",
+                "ふわとろ"
+            ]
+        },
+        {
+            "name": "豚キムチ",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "korean",
+            "timeMinutes": 15,
+            "costYen": 400,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 420,
+            "ingredients": [
+                {
+                    "name": "豚バラ肉",
+                    "amount": "200",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "キムチ",
+                    "amount": "150",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "もやし",
+                    "amount": "1/2",
+                    "unit": "袋",
+                    "isMain": false
+                },
+                {
+                    "name": "ニラ",
+                    "amount": "1/2",
+                    "unit": "束",
+                    "isMain": false
+                },
+                {
+                    "name": "ごま油",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "豚肉を食べやすい大きさに切る",
+                "フライパンでごま油を熱し、豚肉を炒める",
+                "キムチともやしを加えて炒める",
+                "最後にニラを加えてさっと炒めて完成"
+            ],
+            "tags": [
+                "時短",
+                "韓国料理",
+                "ご飯が進む",
+                "辛い"
+            ]
+        },
+        {
+            "name": "肉じゃが",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "japanese",
+            "timeMinutes": 40,
+            "costYen": 450,
+            "difficulty": 2,
+            "seasons": [
+                "fall",
+                "winter"
+            ],
+            "calories": 380,
+            "ingredients": [
+                {
+                    "name": "牛薄切り肉",
+                    "amount": "200",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "じゃがいも",
+                    "amount": "3",
+                    "unit": "個",
+                    "isMain": true
+                },
+                {
+                    "name": "にんじん",
+                    "amount": "1",
+                    "unit": "本",
+                    "isMain": false
+                },
+                {
+                    "name": "玉ねぎ",
+                    "amount": "1",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "しらたき",
+                    "amount": "1",
+                    "unit": "袋",
+                    "isMain": false
+                },
+                {
+                    "name": "だし汁",
+                    "amount": "300",
+                    "unit": "ml",
+                    "isMain": false
+                },
+                {
+                    "name": "醤油",
+                    "amount": "大さじ3",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "砂糖",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "じゃがいもは皮をむいて4等分、にんじんは乱切り",
+                "玉ねぎはくし切りにする",
+                "鍋で牛肉を炒め、野菜を加える",
+                "だし汁、醤油、砂糖を加えて煮込む",
+                "じゃがいもが柔らかくなるまで中火で20分煮る"
+            ],
+            "tags": [
+                "煮物",
+                "定番",
+                "家庭料理"
+            ]
+        },
+        {
+            "name": "ナポリタン",
+            "imageUrl": "",
+            "category": "noodle",
+            "cuisine": "western",
+            "timeMinutes": 25,
+            "costYen": 350,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 620,
+            "ingredients": [
+                {
+                    "name": "スパゲティ",
+                    "amount": "200",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "ウインナー",
+                    "amount": "4",
+                    "unit": "本",
+                    "isMain": false
+                },
+                {
+                    "name": "玉ねぎ",
+                    "amount": "1/2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "ピーマン",
+                    "amount": "2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "ケチャップ",
+                    "amount": "大さじ4",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "バター",
+                    "amount": "20",
+                    "unit": "g",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "パスタを表示時間より1分短く茹でる",
+                "ウインナーは斜め切り、野菜は薄切りにする",
+                "フライパンでバターを溶かし、具材を炒める",
+                "茹でたパスタとケチャップを加えて炒め合わせる"
+            ],
+            "tags": [
+                "洋食",
+                "パスタ",
+                "定番",
+                "子供に人気"
+            ]
+        },
+        {
+            "name": "生姜焼き",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "japanese",
+            "timeMinutes": 20,
+            "costYen": 400,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 480,
+            "ingredients": [
+                {
+                    "name": "豚ロース薄切り",
+                    "amount": "250",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "生姜",
+                    "amount": "1",
+                    "unit": "片",
+                    "isMain": false
+                },
+                {
+                    "name": "醤油",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "みりん",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "酒",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "キャベツ",
+                    "amount": "2",
+                    "unit": "枚",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "生姜をすりおろす",
+                "醤油、みりん、酒、生姜を混ぜてタレを作る",
+                "フライパンで豚肉を焼き、タレを絡める",
+                "千切りキャベツを添えて完成"
+            ],
+            "tags": [
+                "定番",
+                "ご飯が進む",
+                "お弁当にも"
+            ]
+        },
+        {
+            "name": "照り焼きチキン",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "japanese",
+            "timeMinutes": 25,
+            "costYen": 400,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 520,
+            "ingredients": [
+                {
+                    "name": "鶏もも肉",
+                    "amount": "2",
+                    "unit": "枚",
+                    "isMain": true
+                },
+                {
+                    "name": "醤油",
+                    "amount": "大さじ3",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "みりん",
+                    "amount": "大さじ3",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "砂糖",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "酒",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "鶏肉に数箇所切り込みを入れる",
+                "フライパンで皮目から焼き、こんがりさせる",
+                "裏返して蓋をし、蒸し焼きにする",
+                "調味料を加え、とろみがつくまで煮詰める"
+            ],
+            "tags": [
+                "定番",
+                "お弁当にも",
+                "作り置き"
+            ]
+        },
+        {
+            "name": "回鍋肉",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "chinese",
+            "timeMinutes": 20,
+            "costYen": 400,
+            "difficulty": 2,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 450,
+            "ingredients": [
+                {
+                    "name": "豚バラ肉",
+                    "amount": "200",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "キャベツ",
+                    "amount": "1/4",
+                    "unit": "玉",
+                    "isMain": false
+                },
+                {
+                    "name": "ピーマン",
+                    "amount": "2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "甜麺醤",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "豆板醤",
+                    "amount": "小さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "にんにく",
+                    "amount": "1",
+                    "unit": "片",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "豚肉は一口大、キャベツはざく切り、ピーマンは乱切り",
+                "フライパンでにんにくを炒め、豚肉を加える",
+                "野菜を加えてさっと炒める",
+                "甜麺醤と豆板醤で味付けして完成"
+            ],
+            "tags": [
+                "中華",
+                "ご飯が進む",
+                "野菜たっぷり"
+            ]
+        },
+        {
+            "name": "肉野菜炒め",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "japanese",
+            "timeMinutes": 15,
+            "costYen": 350,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 380,
+            "ingredients": [
+                {
+                    "name": "豚こま肉",
+                    "amount": "150",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "キャベツ",
+                    "amount": "2",
+                    "unit": "枚",
+                    "isMain": false
+                },
+                {
+                    "name": "にんじん",
+                    "amount": "1/2",
+                    "unit": "本",
+                    "isMain": false
+                },
+                {
+                    "name": "もやし",
+                    "amount": "1/2",
+                    "unit": "袋",
+                    "isMain": false
+                },
+                {
+                    "name": "醤油",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "オイスターソース",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "野菜を食べやすい大きさに切る",
+                "強火でフライパンを熱し、肉を炒める",
+                "野菜を硬いものから順に加えて炒める",
+                "調味料で味付けして完成"
+            ],
+            "tags": [
+                "時短",
+                "野菜たっぷり",
+                "節約"
+            ]
+        },
+        {
+            "name": "オムライス",
+            "imageUrl": "",
+            "category": "rice",
+            "cuisine": "western",
+            "timeMinutes": 25,
+            "costYen": 350,
+            "difficulty": 2,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 650,
+            "ingredients": [
+                {
+                    "name": "ご飯",
+                    "amount": "2",
+                    "unit": "膳",
+                    "isMain": true
+                },
+                {
+                    "name": "卵",
+                    "amount": "4",
+                    "unit": "個",
+                    "isMain": true
+                },
+                {
+                    "name": "鶏もも肉",
+                    "amount": "100",
+                    "unit": "g",
+                    "isMain": false
+                },
+                {
+                    "name": "玉ねぎ",
+                    "amount": "1/2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "ケチャップ",
+                    "amount": "大さじ4",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "バター",
+                    "amount": "20",
+                    "unit": "g",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "鶏肉と玉ねぎをみじん切りにして炒める",
+                "ご飯を加え、ケチャップで味付けしてチキンライスを作る",
+                "別のフライパンでバターを溶かし、溶き卵を流す",
+                "半熟のうちにチキンライスを乗せて包む"
+            ],
+            "tags": [
+                "洋食",
+                "子供に人気",
+                "卵料理"
+            ]
+        },
+        {
+            "name": "塩サバ焼き",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "japanese",
+            "timeMinutes": 15,
+            "costYen": 300,
+            "difficulty": 1,
+            "seasons": [
+                "fall",
+                "winter"
+            ],
+            "calories": 320,
+            "ingredients": [
+                {
+                    "name": "塩サバ",
+                    "amount": "2",
+                    "unit": "切れ",
+                    "isMain": true
+                },
+                {
+                    "name": "大根おろし",
+                    "amount": "適量",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "すだち",
+                    "amount": "1",
+                    "unit": "個",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "グリルを予熱する",
+                "塩サバを皮目を上にしてグリルで焼く",
+                "両面こんがり焼けたら取り出す",
+                "大根おろしとすだちを添えて完成"
+            ],
+            "tags": [
+                "和食",
+                "シンプル",
+                "ヘルシー"
+            ]
+        },
+        {
+            "name": "唐揚げ",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "japanese",
+            "timeMinutes": 30,
+            "costYen": 450,
+            "difficulty": 2,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 580,
+            "ingredients": [
+                {
+                    "name": "鶏もも肉",
+                    "amount": "400",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "醤油",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "酒",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "生姜",
+                    "amount": "1",
+                    "unit": "片",
+                    "isMain": false
+                },
+                {
+                    "name": "にんにく",
+                    "amount": "1",
+                    "unit": "片",
+                    "isMain": false
+                },
+                {
+                    "name": "片栗粉",
+                    "amount": "適量",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "鶏肉を一口大に切る",
+                "醤油、酒、すりおろした生姜とにんにくに15分漬ける",
+                "片栗粉をまぶす",
+                "170度の油で5分揚げ、一度取り出して2分休ませる",
+                "180度で1分揚げてカリッと仕上げる"
+            ],
+            "tags": [
+                "揚げ物",
+                "定番",
+                "お弁当にも",
+                "人気"
+            ]
+        },
+        {
+            "name": "ハンバーグ",
+            "imageUrl": "",
+            "category": "main",
+            "cuisine": "western",
+            "timeMinutes": 35,
+            "costYen": 500,
+            "difficulty": 2,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 550,
+            "ingredients": [
+                {
+                    "name": "合い挽き肉",
+                    "amount": "300",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "玉ねぎ",
+                    "amount": "1/2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "パン粉",
+                    "amount": "1/2",
+                    "unit": "カップ",
+                    "isMain": false
+                },
+                {
+                    "name": "牛乳",
+                    "amount": "50",
+                    "unit": "ml",
+                    "isMain": false
+                },
+                {
+                    "name": "卵",
+                    "amount": "1",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "ナツメグ",
+                    "amount": "少々",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "玉ねぎをみじん切りにして炒め、冷ます",
+                "パン粉を牛乳で湿らせる",
+                "ひき肉、玉ねぎ、パン粉、卵、調味料をよく混ぜる",
+                "成形して中央をくぼませる",
+                "フライパンで両面を焼き、蓋をして蒸し焼きにする"
+            ],
+            "tags": [
+                "洋食",
+                "定番",
+                "子供に人気"
+            ]
+        },
+        {
+            "name": "味噌汁（豆腐とわかめ）",
+            "imageUrl": "",
+            "category": "soup",
+            "cuisine": "japanese",
+            "timeMinutes": 10,
+            "costYen": 100,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 80,
+            "ingredients": [
+                {
+                    "name": "豆腐",
+                    "amount": "1/2",
+                    "unit": "丁",
+                    "isMain": true
+                },
+                {
+                    "name": "乾燥わかめ",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "だし汁",
+                    "amount": "400",
+                    "unit": "ml",
+                    "isMain": false
+                },
+                {
+                    "name": "味噌",
+                    "amount": "大さじ2",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "長ねぎ",
+                    "amount": "少々",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "だし汁を鍋で温める",
+                "豆腐を賽の目に切って入れる",
+                "わかめを加える",
+                "火を止めて味噌を溶き入れる",
+                "刻んだねぎを散らして完成"
+            ],
+            "tags": [
+                "汁物",
+                "定番",
+                "シンプル"
+            ]
+        },
+        {
+            "name": "カレーライス",
+            "imageUrl": "",
+            "category": "rice",
+            "cuisine": "japanese",
+            "timeMinutes": 45,
+            "costYen": 500,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 750,
+            "ingredients": [
+                {
+                    "name": "豚肉または牛肉",
+                    "amount": "200",
+                    "unit": "g",
+                    "isMain": true
+                },
+                {
+                    "name": "じゃがいも",
+                    "amount": "2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "にんじん",
+                    "amount": "1",
+                    "unit": "本",
+                    "isMain": false
+                },
+                {
+                    "name": "玉ねぎ",
+                    "amount": "1",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "カレールー",
+                    "amount": "1/2",
+                    "unit": "箱",
+                    "isMain": false
+                },
+                {
+                    "name": "水",
+                    "amount": "600",
+                    "unit": "ml",
+                    "isMain": false
+                },
+                {
+                    "name": "ご飯",
+                    "amount": "適量",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "野菜と肉を一口大に切る",
+                "鍋で肉と野菜を炒める",
+                "水を加えて煮込む",
+                "アクを取りながら野菜が柔らかくなるまで煮る",
+                "火を止めてルーを溶かし、再び煮込む"
+            ],
+            "tags": [
+                "定番",
+                "子供に人気",
+                "作り置き"
+            ]
+        },
+        {
+            "name": "焼きそば",
+            "imageUrl": "",
+            "category": "noodle",
+            "cuisine": "japanese",
+            "timeMinutes": 20,
+            "costYen": 300,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 520,
+            "ingredients": [
+                {
+                    "name": "焼きそば麺",
+                    "amount": "2",
+                    "unit": "玉",
+                    "isMain": true
+                },
+                {
+                    "name": "豚バラ肉",
+                    "amount": "100",
+                    "unit": "g",
+                    "isMain": false
+                },
+                {
+                    "name": "キャベツ",
+                    "amount": "2",
+                    "unit": "枚",
+                    "isMain": false
+                },
+                {
+                    "name": "もやし",
+                    "amount": "1/2",
+                    "unit": "袋",
+                    "isMain": false
+                },
+                {
+                    "name": "焼きそばソース",
+                    "amount": "付属",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "青のり",
+                    "amount": "適量",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "キャベツをざく切りにする",
+                "フライパンで豚肉を炒める",
+                "野菜を加えて炒める",
+                "麺を加え、水を少し入れてほぐす",
+                "ソースを絡めて青のりをかける"
+            ],
+            "tags": [
+                "麺類",
+                "定番",
+                "屋台風"
+            ]
+        },
+        {
+            "name": "チャーハン",
+            "imageUrl": "",
+            "category": "rice",
+            "cuisine": "chinese",
+            "timeMinutes": 15,
+            "costYen": 250,
+            "difficulty": 1,
+            "seasons": [
+                "spring",
+                "summer",
+                "fall",
+                "winter"
+            ],
+            "calories": 580,
+            "ingredients": [
+                {
+                    "name": "ご飯",
+                    "amount": "2",
+                    "unit": "膳",
+                    "isMain": true
+                },
+                {
+                    "name": "卵",
+                    "amount": "2",
+                    "unit": "個",
+                    "isMain": false
+                },
+                {
+                    "name": "長ねぎ",
+                    "amount": "1/2",
+                    "unit": "本",
+                    "isMain": false
+                },
+                {
+                    "name": "焼豚",
+                    "amount": "50",
+                    "unit": "g",
+                    "isMain": false
+                },
+                {
+                    "name": "醤油",
+                    "amount": "大さじ1",
+                    "unit": "",
+                    "isMain": false
+                },
+                {
+                    "name": "塩こしょう",
+                    "amount": "少々",
+                    "unit": "",
+                    "isMain": false
+                }
+            ],
+            "steps": [
+                "ねぎはみじん切り、焼豚は角切りにする",
+                "フライパンを強火で熱し、溶き卵を入れる",
+                "すぐにご飯を加えてパラパラに炒める",
+                "焼豚とねぎを加える",
+                "醤油と塩こしょうで味を調える"
+            ],
+            "tags": [
+                "中華",
+                "定番",
+                "残りご飯活用"
+            ]
+        }
+    ]
+}

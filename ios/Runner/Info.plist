@@ -67,5 +67,11 @@
 			<string>cstr6suwn9.skadnetwork</string>
 		</dict>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>料理の写真を記録に追加するために写真ライブラリへのアクセスが必要です</string>
+	<key>NSCameraUsageDescription</key>
+	<string>料理の写真を撮影するためにカメラへのアクセスが必要です</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>撮影した写真を保存するために写真ライブラリへのアクセスが必要です</string>
 </dict>
 </plist>

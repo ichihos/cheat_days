@@ -1,99 +1,116 @@
-import 'package:cheat_days/core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 
 class MessieWidget extends StatelessWidget {
   final String comment;
+  final TextEditingController? inputController;
+  final VoidCallback? onSendMessage;
   final VoidCallback? onTap;
 
-  const MessieWidget({super.key, required this.comment, this.onTap});
+  const MessieWidget({
+    super.key,
+    required this.comment,
+    this.inputController,
+    this.onSendMessage,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 160,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // Speech Bubble
-          Positioned(
-            right: 80, // Position bubble to left of dino
-            bottom: 40,
-            child: Container(
-              width: 200,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Messie + Speech Bubble Row
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Messie Character (LEFT)
+            GestureDetector(
+              onTap: onTap,
+              child: Image.asset(
+                'assets/images/messie.png',
+                width: 80,
+                height: 80,
+                fit: BoxFit.contain,
+                errorBuilder:
+                    (context, error, stackTrace) =>
+                        const Text("🦕", style: TextStyle(fontSize: 60)),
               ),
-              child: Text(
-                comment,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+            ),
+            const SizedBox(width: 8),
+            // Speech Bubble
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  comment,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                    height: 1.4,
+                  ),
                 ),
               ),
             ),
-          ),
-          // Small triangle for speech bubble
-          Positioned(
-            right: 85,
-            bottom: 50,
-            child: CustomPaint(painter: TrianglePainter()),
-          ),
+          ],
+        ),
 
-          // Dinosaur Character (Simple placeholder for now)
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: GestureDetector(
-              onTap: onTap,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  // shape: BoxShape.circle,
-                  // color: Colors.blueAccent, // Placeholder
+        // Text Input (if controller provided)
+        if (inputController != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
-                child: const Text(
-                  "🦕", // Dino Emoji
-                  style: TextStyle(fontSize: 80),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: inputController,
+                    decoration: const InputDecoration(
+                      hintText: 'メッシーに質問...',
+                      hintStyle: TextStyle(color: Colors.grey),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    style: const TextStyle(fontSize: 14),
+                    onSubmitted: (_) => onSendMessage?.call(),
+                  ),
                 ),
-              ),
+                IconButton(
+                  onPressed: onSendMessage,
+                  icon: Icon(
+                    Icons.send_rounded,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
-      ),
+      ],
     );
-  }
-}
-
-class TrianglePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    var paint =
-        Paint()
-          ..color = Colors.white
-          ..style = PaintingStyle.fill;
-
-    var path = Path();
-    path.moveTo(0, 0);
-    path.lineTo(10, 10);
-    path.lineTo(0, 20);
-    path.close();
-
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
   }
 }

@@ -33,4 +33,21 @@ class MealRecordRepository {
         .collection('mealRecords')
         .add(record.toMap());
   }
+
+  /// Get recent meal records from the last N days
+  Future<List<MealRecord>> getRecentRecords(
+    String userId, {
+    int days = 7,
+  }) async {
+    final cutoffDate = DateTime.now().subtract(Duration(days: days));
+    final snapshot =
+        await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('mealRecords')
+            .where('date', isGreaterThan: Timestamp.fromDate(cutoffDate))
+            .orderBy('date', descending: true)
+            .get();
+    return snapshot.docs.map((doc) => MealRecord.fromFirestore(doc)).toList();
+  }
 }

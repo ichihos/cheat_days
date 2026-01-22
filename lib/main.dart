@@ -1,8 +1,9 @@
 import 'package:cheat_days/core/theme/app_theme.dart';
-import 'package:cheat_days/core/utils/data_seeder.dart';
 import 'package:cheat_days/features/auth/data/user_repository.dart';
 import 'package:cheat_days/features/auth/repository/auth_repository.dart';
 import 'package:cheat_days/features/home/presentation/home_screen.dart';
+import 'package:cheat_days/features/home/presentation/yesterday_check_dialog.dart';
+import 'package:cheat_days/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:cheat_days/features/records/presentation/records_screen.dart';
 import 'package:cheat_days/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -16,13 +17,11 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize App Check
-  // Using Debug provider for development. In production, use AppleProvider.appAttest or AndroidProvider.playIntegrity
   await FirebaseAppCheck.instance.activate(
     androidProvider: AndroidProvider.debug,
     appleProvider: AppleProvider.debug,
   );
 
-  // await DataSeeder.seedRecipes(); // Disabled for production/admin only
   runApp(const ProviderScope(child: MessieApp()));
 }
 
@@ -52,7 +51,7 @@ class AuthWrapper extends ConsumerWidget {
         if (user != null) {
           // Ensure profile exists
           ref.read(userRepositoryProvider).createProfileIfAbsent(user);
-          return const MainScaffold();
+          return const OnboardingChecker();
         } else {
           // Auto sign-in anonymously
           ref.read(authRepositoryProvider).signInAnonymously();
@@ -66,6 +65,80 @@ class AuthWrapper extends ConsumerWidget {
               const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, trace) => Scaffold(body: Center(child: Text('Error: $e'))),
     );
+  }
+}
+
+/// Check if onboarding is complete before showing main scaffold
+class OnboardingChecker extends ConsumerWidget {
+  const OnboardingChecker({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsAsync = ref.watch(userSettingsProvider);
+
+    return settingsAsync.when(
+      data: (settings) {
+        if (!settings.isOnboardingComplete) {
+          return OnboardingScreen(
+            onComplete: () {
+              // Force rebuild by invalidating the provider
+              ref.invalidate(userSettingsProvider);
+            },
+          );
+        }
+        return const MainScaffoldWithCheck();
+      },
+      loading:
+          () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, st) {
+        // If settings don't exist yet, show onboarding
+        return OnboardingScreen(
+          onComplete: () => ref.invalidate(userSettingsProvider),
+        );
+      },
+    );
+  }
+}
+
+/// Main scaffold that also checks for yesterday's meal on first load
+class MainScaffoldWithCheck extends ConsumerStatefulWidget {
+  const MainScaffoldWithCheck({super.key});
+
+  @override
+  ConsumerState<MainScaffoldWithCheck> createState() =>
+      _MainScaffoldWithCheckState();
+}
+
+class _MainScaffoldWithCheckState extends ConsumerState<MainScaffoldWithCheck> {
+  bool _hasCheckedYesterday = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Schedule the check after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkYesterdayMeal();
+    });
+  }
+
+  Future<void> _checkYesterdayMeal() async {
+    if (_hasCheckedYesterday) return;
+    _hasCheckedYesterday = true;
+
+    final shouldShow = await shouldShowYesterdayCheck(ref);
+    if (shouldShow && mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => const YesterdayCheckDialog(),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const MainScaffold();
   }
 }
 
