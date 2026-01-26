@@ -101,6 +101,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         dislikedIngredients: _dislikedIngredients.toList(),
         isOnboardingComplete: true,
         totalRecordsCount: 0,
+        lastFridgeCheckAt: DateTime.now(),
       );
 
       await ref.read(userRepositoryProvider).updateSettings(user.uid, settings);

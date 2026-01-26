@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cheat_days/core/constants/app_constants.dart';
 import 'package:cheat_days/features/auth/data/user_repository.dart';
 import 'package:cheat_days/features/auth/domain/user_settings.dart';
@@ -35,6 +36,51 @@ final dailySuggestionProvider = FutureProvider<DailySuggestionState>((
 
   if (recipes.isEmpty) {
     return DailySuggestionState();
+  }
+
+  // Check Firestore for pre-generated suggestion
+  if (user != null) {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final suggestionSnap =
+          await firestore
+              .collection('users')
+              .doc(user.uid)
+              .collection('daily_suggestions')
+              .orderBy('createdAt', descending: true)
+              .limit(1)
+              .get();
+
+      if (suggestionSnap.docs.isNotEmpty) {
+        final data = suggestionSnap.docs.first.data();
+        final selectedRecipeId = data['selectedRecipeId'] as String?;
+        final sideDishId = data['sideDishRecipeId'] as String?;
+        final messieComment = data['messieComment'] as String?;
+        final reason = data['reason'] as String?;
+
+        if (selectedRecipeId != null) {
+          final selectedRecipe = recipes.firstWhere(
+            (r) => r.id == selectedRecipeId,
+            orElse: () => recipes.first,
+          );
+          Recipe? sideDish;
+          if (sideDishId != null) {
+            try {
+              sideDish = recipes.firstWhere((r) => r.id == sideDishId);
+            } catch (_) {}
+          }
+
+          return DailySuggestionState(
+            recipe: selectedRecipe,
+            sideDish: sideDish,
+            messieComment: messieComment,
+            reason: reason,
+          );
+        }
+      }
+    } catch (e) {
+      print("Error fetching daily suggestion from Firestore: $e");
+    }
   }
 
   // 2. Fetch user settings
@@ -82,7 +128,7 @@ final dailySuggestionProvider = FutureProvider<DailySuggestionState>((
     candidates.addAll(remaining.take(10 - candidates.length));
   }
 
-  // 6. Call AI with full context
+  // 6. Call AI with full context (Fallback)
   try {
     final suggestion = await aiService.suggestMeal(
       candidates: candidates,
@@ -101,6 +147,28 @@ final dailySuggestionProvider = FutureProvider<DailySuggestionState>((
         try {
           sideDish = recipes.firstWhere((r) => r.id == suggestion.sideDishId);
         } catch (_) {}
+      }
+
+      // Save this fallback suggestion to Firestore so we don't regenerate immediately
+      if (user != null) {
+        try {
+          final dateStr = DateTime.now().toIso8601String().split('T')[0];
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .collection('daily_suggestions')
+              .doc(dateStr)
+              .set({
+                'selectedRecipeId': suggestion.recipeId,
+                'sideDishRecipeId': suggestion.sideDishId,
+                'messieComment': suggestion.messieComment,
+                'reason': suggestion.reason,
+                'createdAt': FieldValue.serverTimestamp(),
+                'date': dateStr,
+              });
+        } catch (e) {
+          print("Failed to save fallback suggestion: $e");
+        }
       }
 
       return DailySuggestionState(

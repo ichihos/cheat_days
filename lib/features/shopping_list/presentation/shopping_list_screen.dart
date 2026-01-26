@@ -17,62 +17,23 @@ final shoppingListStreamProvider =
       return repository.streamItems(user.uid);
     });
 
-final shoppingSuggestionsProvider = FutureProvider.autoDispose<List<String>>((
-  ref,
-) async {
-  final user = ref.watch(authStateProvider).value;
-  if (user == null) return [];
-
-  // Wait for existing list to be loaded
-  final currentList = await ref.watch(shoppingListStreamProvider.future);
-
-  // Get supporting data
-  final pantryItems = await ref
-      .read(pantryRepositoryProvider)
-      .getPantryItems(user.uid);
-  final recentMeals = await ref
-      .read(mealRecordRepositoryProvider)
-      .getRecentRecords(user.uid);
-
-  // Call AI
-  return ref
-      .read(aiServiceProvider)
-      .getShoppingSuggestions(
-        pantryItems: pantryItems,
-        recentMeals: recentMeals,
-        currentList: currentList,
-      );
-});
-
 class ShoppingListScreen extends ConsumerWidget {
   const ShoppingListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final itemsAsync = ref.watch(shoppingListStreamProvider);
-    final suggestionsAsync = ref.watch(shoppingSuggestionsProvider);
     final user = ref.watch(authStateProvider).value;
 
     return Scaffold(
       appBar: AppBar(title: const Text('買い物リスト')),
       body: Column(
         children: [
-          // AI Suggestions Area
-          if (suggestionsAsync.valueOrNull != null &&
-              suggestionsAsync.valueOrNull!.isNotEmpty)
-            _buildSuggestionsArea(
-              context,
-              ref,
-              suggestionsAsync.value!,
-              user?.uid,
-            ),
-
           // Main Listing
           Expanded(
             child: itemsAsync.when(
               data: (items) {
-                if (items.isEmpty &&
-                    (suggestionsAsync.valueOrNull?.isEmpty ?? true)) {
+                if (items.isEmpty) {
                   return const Center(
                     child: Text(
                       "買い物リストは空です\n[+]ボタンで追加",
@@ -143,68 +104,6 @@ class ShoppingListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSuggestionsArea(
-    BuildContext context,
-    WidgetRef ref,
-    List<String> suggestions,
-    String? userId,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      color: Colors.orange[50], // Messie color accent
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Image.asset(
-                'assets/images/messie.png',
-                width: 24,
-                height: 24,
-                errorBuilder: (_, __, ___) => const Text("🦕"),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                "これも買うっシー？",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Colors.brown,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children:
-                suggestions.map((suggestion) {
-                  return ActionChip(
-                    label: Text(suggestion),
-                    backgroundColor: Colors.white,
-                    elevation: 1,
-                    onPressed: () {
-                      if (userId == null) return;
-                      final item = ShoppingItem(
-                        id: const Uuid().v4(),
-                        name: suggestion,
-                        createdAt: DateTime.now(),
-                      );
-                      ref
-                          .read(shoppingListRepositoryProvider)
-                          .addItem(userId, item);
-                      // Refresh suggestions to remove added item (optional, purely UI update)
-                      // In a real app we might remove it from the local list or re-fetch
-                    },
-                  );
-                }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showAddItemDialog(BuildContext context, WidgetRef ref, String userId) {
     final controller = TextEditingController();
     showDialog(
@@ -216,6 +115,7 @@ class ShoppingListScreen extends ConsumerWidget {
               controller: controller,
               decoration: const InputDecoration(hintText: "例: 牛乳"),
               autofocus: true,
+              onSubmitted: (_) => _addItem(context, ref, userId, controller),
             ),
             actions: [
               TextButton(
@@ -223,23 +123,207 @@ class ShoppingListScreen extends ConsumerWidget {
                 child: const Text("キャンセル"),
               ),
               ElevatedButton(
-                onPressed: () {
-                  if (controller.text.trim().isNotEmpty) {
-                    final item = ShoppingItem(
-                      id: const Uuid().v4(),
-                      name: controller.text.trim(),
-                      createdAt: DateTime.now(),
-                    );
-                    ref
-                        .read(shoppingListRepositoryProvider)
-                        .addItem(userId, item);
-                    Navigator.pop(context);
-                  }
-                },
+                onPressed: () => _addItem(context, ref, userId, controller),
                 child: const Text("追加"),
               ),
             ],
           ),
+    );
+  }
+
+  Future<void> _addItem(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    TextEditingController controller,
+  ) async {
+    final text = controller.text.trim();
+    if (text.isEmpty) return;
+
+    final item = ShoppingItem(
+      id: const Uuid().v4(),
+      name: text,
+      createdAt: DateTime.now(),
+    );
+    await ref.read(shoppingListRepositoryProvider).addItem(userId, item);
+    if (context.mounted) Navigator.pop(context);
+
+    // Trigger AI Suggestions
+    if (context.mounted) {
+      _fetchAndShowSuggestions(context, ref, userId, text);
+    }
+  }
+
+  Future<void> _fetchAndShowSuggestions(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    String addedItemName,
+  ) async {
+    // Show loading indicator
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(width: 8),
+            Text('メッシーが関連アイテムを考えています...'),
+          ],
+        ),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    try {
+      final currentList = await ref.read(shoppingListStreamProvider.future);
+      final pantryItems = await ref
+          .read(pantryRepositoryProvider)
+          .getPantryItems(userId);
+      final recentMeals = await ref
+          .read(mealRecordRepositoryProvider)
+          .getRecentRecords(userId);
+
+      final suggestions = await ref
+          .read(aiServiceProvider)
+          .getRelatedShoppingSuggestions(
+            addedItemName: addedItemName,
+            pantryItems: pantryItems,
+            recentMeals: recentMeals,
+            currentList: currentList,
+          );
+
+      if (suggestions.isNotEmpty && context.mounted) {
+        _showSuggestionsSheet(context, ref, userId, suggestions);
+      }
+    } catch (e) {
+      debugPrint('Error fetching suggestions: $e');
+    }
+  }
+
+  void _showSuggestionsSheet(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    List<ShoppingSuggestion> suggestions,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.orange[50], // Messie Theme
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Image.asset(
+                    'assets/images/messie.png',
+                    width: 32,
+                    height: 32,
+                    errorBuilder: (_, __, ___) => const Text("🦕"),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    "これも一緒にどうっシー？",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: suggestions.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final suggestion = suggestions[index];
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                suggestion.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                suggestion.reason,
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.add_circle,
+                            color: Colors.orange,
+                          ),
+                          onPressed: () {
+                            final item = ShoppingItem(
+                              id: const Uuid().v4(),
+                              name: suggestion.name,
+                              isAiSuggested: true,
+                              createdAt: DateTime.now(),
+                            );
+                            ref
+                                .read(shoppingListRepositoryProvider)
+                                .addItem(userId, item);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${suggestion.name}を追加したっシー'),
+                              ),
+                            );
+                            Navigator.pop(context); // Close sheet after adding
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('今は大丈夫'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -268,12 +352,48 @@ class _ShoppingListItem extends ConsumerWidget {
       },
       child: CheckboxListTile(
         value: item.isChecked,
-        title: Text(
-          item.name,
-          style: TextStyle(
-            decoration: item.isChecked ? TextDecoration.lineThrough : null,
-            color: item.isChecked ? Colors.grey : Colors.black87,
-          ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                item.name,
+                style: TextStyle(
+                  decoration:
+                      item.isChecked ? TextDecoration.lineThrough : null,
+                  color: item.isChecked ? Colors.grey : Colors.black87,
+                ),
+              ),
+            ),
+            if (item.isAiSuggested)
+              Container(
+                margin: const EdgeInsets.only(left: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.orange[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/messie.png',
+                      width: 16,
+                      height: 16,
+                      errorBuilder: (_, __, ___) => const Text("🦕"),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'Messie',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.brown,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
         onChanged: (val) {
           if (userId != null && val != null) {

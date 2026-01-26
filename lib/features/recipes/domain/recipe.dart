@@ -74,6 +74,40 @@ class Recipe {
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
+
+  Recipe copyWith({
+    String? id,
+    String? name,
+    String? imageUrl,
+    String? category,
+    String? cuisine,
+    int? timeMinutes,
+    int? costYen,
+    int? difficulty,
+    List<String>? seasons,
+    int? calories,
+    List<Ingredient>? ingredients,
+    List<String>? steps,
+    List<String>? tags,
+    DateTime? createdAt,
+  }) {
+    return Recipe(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      imageUrl: imageUrl ?? this.imageUrl,
+      category: category ?? this.category,
+      cuisine: cuisine ?? this.cuisine,
+      timeMinutes: timeMinutes ?? this.timeMinutes,
+      costYen: costYen ?? this.costYen,
+      difficulty: difficulty ?? this.difficulty,
+      seasons: seasons ?? this.seasons,
+      calories: calories ?? this.calories,
+      ingredients: ingredients ?? this.ingredients,
+      steps: steps ?? this.steps,
+      tags: tags ?? this.tags,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 class Ingredient {

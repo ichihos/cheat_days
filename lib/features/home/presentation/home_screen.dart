@@ -1,12 +1,10 @@
+import 'dart:async';
 import 'package:cheat_days/core/constants/app_constants.dart';
-import 'package:cheat_days/features/auth/data/user_repository.dart';
-import 'package:cheat_days/features/auth/repository/auth_repository.dart';
-import 'package:cheat_days/features/home/data/ai_service.dart';
-import 'package:cheat_days/features/pantry/data/pantry_repository.dart';
+import 'package:cheat_days/features/agent/domain/messie_action.dart';
+import 'package:cheat_days/features/agent/presentation/messie_agent_provider.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
 import 'package:cheat_days/features/recipes/presentation/daily_suggestion_provider.dart';
 import 'package:cheat_days/features/recipes/presentation/recipe_detail_screen.dart';
-import 'package:cheat_days/features/records/data/meal_record_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,17 +15,66 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   bool _isChatting = false;
   bool _showSideDish = false;
-  final List<ChatMessage> _chatHistory = [];
+
+  // Static variable to track if initial slide-in has happened in this app session
+  static bool _hasAnimatedEntry = false;
+  Timer? _swayTimer;
+
+  // Messie Animation Controllers
+  late AnimationController _messieSlideController;
+  late AnimationController _messieSwayController;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _swayAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    // Slide-in animation (plays once)
+    _messieSlideController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(-1.0, 0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _messieSlideController,
+        curve: Curves.easeOutBack,
+      ),
+    );
+
+    // Only animate on first launch of this screen in the session
+    if (!_hasAnimatedEntry) {
+      _messieSlideController.forward();
+      _hasAnimatedEntry = true;
+    } else {
+      _messieSlideController.value = 1.0;
+    }
+
+    // Sway animation (loops)
+    _messieSwayController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+    _swayAnimation = Tween<double>(begin: -0.03, end: 0.03).animate(
+      CurvedAnimation(parent: _messieSwayController, curve: Curves.easeInOut),
+    );
+  }
 
   @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _messieSlideController.dispose();
+    _messieSwayController.dispose();
+    _swayTimer?.cancel();
     super.dispose();
   }
 
@@ -37,37 +84,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     setState(() {
       _isChatting = true;
-      _chatHistory.add(ChatMessage(text: message, isUser: true));
     });
     _messageController.clear();
     _scrollToBottom();
 
     try {
-      final user = ref.read(authStateProvider).value;
-      if (user != null) {
-        final settings = await ref.read(userSettingsProvider.future);
-        final pantry = await ref
-            .read(pantryRepositoryProvider)
-            .getPantryItems(user.uid);
-        final recent = await ref
-            .read(mealRecordRepositoryProvider)
-            .getRecentRecords(user.uid);
+      // Use Messie Agent for processing
+      await ref.read(messieAgentProvider.notifier).processUserMessage(message);
 
-        final response = await ref
-            .read(aiServiceProvider)
-            .chatWithMessie(
-              message: message,
-              settings: settings,
-              pantryItems: pantry,
-              recentMeals: recent,
-            );
-
-        if (mounted) {
-          setState(() {
-            _chatHistory.add(ChatMessage(text: response, isUser: false));
-          });
-          _scrollToBottom();
-        }
+      if (mounted) {
+        _scrollToBottom();
+        // Check for actions that update UI
+        _handleAgentActions();
       }
     } catch (e) {
       if (mounted) {
@@ -78,6 +106,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } finally {
       if (mounted) {
         setState(() => _isChatting = false);
+      }
+    }
+  }
+
+  void _handleAgentActions() {
+    final agentState = ref.read(messieAgentProvider);
+
+    // Show feedback for actions
+    for (final action in agentState.recentActions) {
+      switch (action.type) {
+        case MessieActionType.addToShopping:
+          final items = action.data['items'] as List<dynamic>? ?? [];
+          if (items.isNotEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('🗭 買い物リストに追加: ${items.join(", ")}'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+          break;
+        case MessieActionType.recordMeal:
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ 料理を記録しました'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          break;
+        case MessieActionType.changeSuggestion:
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🍽️ メニューを変更したっシー'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          break;
+        case MessieActionType.adjustRecipe:
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✨ レシピを調整したっシー'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          break;
+        case MessieActionType.updateFridge:
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🧊 冷蔵庫の中身を更新したっシー'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          break;
+        default:
+          break;
       }
     }
   }
@@ -97,27 +180,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen(dailySuggestionProvider, (previous, next) {
-      // Clear history if recipe changes
+      // Sync daily suggestion with agent state
+      if (next.value != null) {
+        ref
+            .read(messieAgentProvider.notifier)
+            .syncWithDailySuggestion(next.value!);
+      }
+
+      // Reset side dish toggle if recipe changes
       if (previous?.value?.recipe?.id != next.value?.recipe?.id) {
         setState(() {
-          _chatHistory.clear();
           _showSideDish = false;
         });
       }
     });
 
+    // Listen to Messie's last message to trigger sway animation
+    ref.listen(messieAgentProvider.select((s) => s.lastMessage), (prev, next) {
+      if (next != null) {
+        _messieSwayController.repeat(reverse: true);
+        _swayTimer?.cancel();
+        _swayTimer = Timer(const Duration(seconds: 3), () {
+          if (mounted) {
+            _messieSwayController.stop();
+            _messieSwayController.animateTo(0);
+          }
+        });
+      }
+    });
+
     final suggestionAsync = ref.watch(dailySuggestionProvider);
+    final messieState = ref.watch(messieAgentProvider);
 
     return Scaffold(
       body: SafeArea(
         child: suggestionAsync.when(
           data: (state) {
-            final recipe = state.recipe;
+            // Verify we have a recipe from either source
+            final recipe = messieState.currentSuggestion ?? state.recipe;
 
             if (recipe == null) {
               return _buildEmptyState();
             }
-            return _buildContent(context, state);
+            // Ensure synchronization if Messie state is empty but Daily is not
+            if (messieState.currentSuggestion == null && state.recipe != null) {
+              Future.microtask(
+                () => ref
+                    .read(messieAgentProvider.notifier)
+                    .syncWithDailySuggestion(state),
+              );
+            }
+
+            return _buildContent(context, recipe, messieState);
           },
           loading: () => const Center(child: CircularProgressIndicator()),
           error:
@@ -176,56 +290,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildContent(BuildContext context, DailySuggestionState state) {
-    final recipe = state.recipe!;
-    final comment = state.messieComment;
+  Widget _buildContent(
+    BuildContext context,
+    Recipe recipe,
+    MessieAgentState agentState,
+  ) {
+    final comment = agentState.lastMessage;
+    final sideDish = agentState.sideDish;
+    final chatHistory = agentState.chatHistory;
 
     return Column(
       children: [
-        // Recipe Area (Scrollable)
         Expanded(
-          flex: 3,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              // Sticky Header
+              SliverAppBar(
+                pinned: true,
+                backgroundColor: Colors.white,
+                surfaceTintColor: Colors.white,
+                elevation: 1,
+                leading: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    errorBuilder: (_, __, ___) => const Text("🦕"),
                   ),
-                  child: Row(
-                    children: [
-                      Image.asset(
-                        'assets/logo.png',
-                        height: 32,
-                        fit: BoxFit.contain,
-                        errorBuilder:
-                            (_, __, ___) => Text(
-                              'Messie',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
+                ),
+                title: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => RecipeDetailScreen(recipe: recipe),
                       ),
-                      const Spacer(),
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
                         '今日の献立',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                      ),
+                      Text(
+                        recipe.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-
-                // Main Recipe Card
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: GestureDetector(
-                    onTap: () {
+                actions: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -234,33 +364,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       );
                     },
-                    child: Builder(
-                      builder: (context) {
-                        // Main tag
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(bottom: 8, left: 4),
-                              child: Text(
-                                "主菜",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 300, // Fixed height for main card
-                              child: _RecipeCard(recipe: recipe),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                ],
+              ),
 
-                // Side Dish Card (if shown)
-                if (_showSideDish && state.sideDish != null) ...[
-                  const SizedBox(height: 24),
+              SliverList(
+                delegate: SliverChildListDelegate([
+                  const SizedBox(height: 12),
+                  // Main Recipe Card
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: GestureDetector(
@@ -269,246 +381,305 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           context,
                           MaterialPageRoute(
                             builder:
-                                (context) =>
-                                    RecipeDetailScreen(recipe: state.sideDish!),
+                                (context) => RecipeDetailScreen(recipe: recipe),
                           ),
                         );
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8, left: 4),
-                            child: Row(
-                              children: [
-                                const Text(
-                                  "副菜",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  "(${state.sideDish!.name})",
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8, left: 4),
+                            child: Text(
+                              "主菜",
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                           SizedBox(
-                            // Smaller card for side dish? Or same?
-                            height: 200,
-                            child: _RecipeCard(recipe: state.sideDish!),
+                            height: 280,
+                            child: _RecipeCard(recipe: recipe),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ],
 
-                const SizedBox(height: 16),
-
-                // Quick Action Chips
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Wrap(
-                    spacing: 8,
-                    children: [
-                      _ActionChip(
-                        label: '時短',
-                        onTap: () => ref.refresh(dailySuggestionProvider),
-                      ),
-                      _ActionChip(
-                        label: '節約',
-                        onTap: () => ref.refresh(dailySuggestionProvider),
-                      ),
-                      if (!_showSideDish && state.sideDish != null)
-                        _ActionChip(
-                          label: 'もう一品',
-                          isPrimary: true, // Highlight this as important
-                          onTap: () => setState(() => _showSideDish = true),
-                        ),
-                      _ActionChip(
-                        label: '別の主菜',
-                        onTap: () => ref.refresh(dailySuggestionProvider),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Chat Area
-        Expanded(
-          flex: 2,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child: Column(
-              children: [
-                // Chat List
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
-                      ),
-                      border: Border.all(color: Colors.grey[200]!),
-                    ),
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      itemCount:
-                          _chatHistory.length + 1, // +1 for initial message
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          // Initial Messie Message
-                          return _buildMessageBubble(
-                            ChatMessage(
-                              text:
-                                  comment ??
-                                  "${recipe.name}はどう${AppConstants.messieSuffix}？\n${recipe.timeMinutes}分で作れる${AppConstants.messieSuffix}！",
-                              isUser: false,
+                  // Side Dish Card (if shown)
+                  if (_showSideDish && sideDish != null) ...[
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      RecipeDetailScreen(recipe: sideDish),
                             ),
-                            true, // Show avatar for first message
                           );
-                        }
-                        final chatMsg = _chatHistory[index - 1];
-                        return _buildMessageBubble(
-                          chatMsg,
-                          !chatMsg.isUser, // Show avatar only for Messie
-                        );
-                      },
-                    ),
-                  ),
-                ),
-
-                // Input Area
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: const BorderRadius.vertical(
-                      bottom: Radius.circular(20),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: 8,
+                                left: 4,
+                              ),
+                              child: Row(
+                                children: [
+                                  const Text(
+                                    "副菜",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "(${sideDish.name})",
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 180,
+                              child: _RecipeCard(recipe: sideDish),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                    border: Border.all(color: Colors.grey[200]!),
+                    ),
+                  ],
+
+                  const SizedBox(height: 20),
+
+                  // Quick Action Chips
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _ActionChip(
+                          label: '時短',
+                          onTap: () => ref.refresh(dailySuggestionProvider),
+                        ),
+                        _ActionChip(
+                          label: '節約',
+                          onTap: () => ref.refresh(dailySuggestionProvider),
+                        ),
+                        if (!_showSideDish && sideDish != null)
+                          _ActionChip(
+                            label: 'もう一品',
+                            isPrimary: true,
+                            onTap: () => setState(() => _showSideDish = true),
+                          ),
+                        _ActionChip(
+                          label: '別の主菜',
+                          onTap: () => ref.refresh(dailySuggestionProvider),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _messageController,
-                          decoration: const InputDecoration(
-                            hintText: 'メッシーに話しかける...',
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16,
+
+                  const SizedBox(height: 24),
+
+                  // Chat Section Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        Text(
+                          'メッシーとの会話',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        const Spacer(),
+                        if (chatHistory.isNotEmpty)
+                          GestureDetector(
+                            onTap:
+                                () => _scrollController.animateTo(
+                                  0,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeOut,
+                                ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.arrow_upward,
+                                  size: 14,
+                                  color: Colors.grey[500],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'トップへ',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          onSubmitted: (_) => _sendMessage(),
-                          enabled: !_isChatting,
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Chat History
+                  if (chatHistory.isEmpty && comment != null)
+                    _buildLargeMessageBubble(
+                      ChatMessage(text: comment, isUser: false),
+                    ),
+
+                  ...chatHistory.map((msg) => _buildLargeMessageBubble(msg)),
+
+                  // Bottom padding
+                  const SizedBox(height: 20),
+                ]),
+              ),
+            ],
+          ),
+        ),
+
+        // Sticky Input Area
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: const InputDecoration(
+                        hintText: 'メッシーに話しかける...',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
                         ),
                       ),
-                      IconButton(
-                        onPressed: _isChatting ? null : _sendMessage,
-                        icon:
-                            _isChatting
-                                ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : Icon(
-                                  Icons.send,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                      ),
-                    ],
+                      onSubmitted: (_) => _sendMessage(),
+                      enabled: !_isChatting,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    onPressed: _isChatting ? null : _sendMessage,
+                    icon:
+                        _isChatting
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Icon(Icons.send, color: Colors.white),
                   ),
                 ),
               ],
             ),
           ),
         ),
-
-        const SizedBox(height: 8),
       ],
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message, bool showAvatar) {
+  Widget _buildLargeMessageBubble(ChatMessage message) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
         mainAxisAlignment:
             message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!message.isUser && showAvatar) ...[
-            Image.asset(
-              'assets/images/messie.png',
-              width: 32,
-              height: 32,
-              errorBuilder: (_, __, ___) => const Text("🦕"),
+          if (!message.isUser) ...[
+            SlideTransition(
+              position: _slideAnimation,
+              child: AnimatedBuilder(
+                animation: _swayAnimation,
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: _swayAnimation.value,
+                    child: child,
+                  );
+                },
+                child: Image.asset(
+                  'assets/images/messie.png',
+                  width: 70,
+                  height: 70,
+                  errorBuilder:
+                      (_, __, ___) =>
+                          const Text("🦕", style: TextStyle(fontSize: 40)),
+                ),
+              ),
             ),
-            const SizedBox(width: 8),
-          ] else if (!message.isUser)
-            const SizedBox(width: 40), // Spacer for alignment
+            const SizedBox(width: 12),
+          ],
 
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: message.isUser ? Colors.green[100] : Colors.white,
-                borderRadius: BorderRadius.circular(12).copyWith(
+                borderRadius: BorderRadius.circular(16).copyWith(
                   topLeft:
-                      message.isUser
-                          ? const Radius.circular(12)
-                          : const Radius.circular(0),
+                      message.isUser ? const Radius.circular(16) : Radius.zero,
                   topRight:
-                      message.isUser
-                          ? const Radius.circular(0)
-                          : const Radius.circular(12),
+                      message.isUser ? Radius.zero : const Radius.circular(16),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1),
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: Text(message.text, style: const TextStyle(fontSize: 14)),
+              child: Text(
+                message.text,
+                style: const TextStyle(fontSize: 15, height: 1.5),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-}
-
-class ChatMessage {
-  final String text;
-  final bool isUser;
-  ChatMessage({required this.text, required this.isUser});
 }
 
 class _RecipeCard extends StatelessWidget {
@@ -518,6 +689,8 @@ class _RecipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAiGenerated = recipe.tags.contains('AI考案');
+
     return Card(
       elevation: 6,
       clipBehavior: Clip.antiAlias,
@@ -532,23 +705,9 @@ class _RecipeCard extends StatelessWidget {
                       recipe.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder:
-                          (context, error, stackTrace) => Container(
-                            color: Colors.orange[100],
-                            child: const Icon(
-                              Icons.restaurant,
-                              size: 80,
-                              color: Colors.orange,
-                            ),
-                          ),
+                          (context, error, stackTrace) => _buildPlaceholder(),
                     )
-                    : Container(
-                      color: Colors.orange[100],
-                      child: const Icon(
-                        Icons.restaurant,
-                        size: 80,
-                        color: Colors.orange,
-                      ),
-                    ),
+                    : _buildPlaceholder(isAiGenerated: isAiGenerated),
           ),
 
           // Gradient Overlay
@@ -576,6 +735,26 @@ class _RecipeCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (isAiGenerated)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'AI考案',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 Text(
                   recipe.name,
                   style: const TextStyle(
@@ -622,6 +801,27 @@ class _RecipeCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPlaceholder({bool isAiGenerated = false}) {
+    if (isAiGenerated) {
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF6A11CB), Color(0xFF2575FC)],
+          ),
+        ),
+        child: const Center(
+          child: Icon(Icons.auto_awesome, size: 80, color: Colors.white24),
+        ),
+      );
+    }
+    return Container(
+      color: Colors.orange[100],
+      child: const Icon(Icons.restaurant, size: 80, color: Colors.orange),
     );
   }
 }

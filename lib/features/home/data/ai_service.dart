@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:cheat_days/features/auth/domain/user_settings.dart';
+import 'package:cheat_days/features/context/domain/user_context.dart';
 import 'package:cheat_days/features/pantry/domain/pantry_item.dart';
 import 'package:cheat_days/features/records/domain/meal_record.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
@@ -25,13 +27,24 @@ class AiSuggestion {
   });
 }
 
+class ShoppingSuggestion {
+  final String name;
+  final String reason;
+  ShoppingSuggestion({required this.name, required this.reason});
+}
+
 class AiService {
   late final GenerativeModel _model;
+  late final GenerativeModel _textModel; // For plain text responses
 
   AiService() {
     _model = FirebaseVertexAI.instance.generativeModel(
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       generationConfig: GenerationConfig(responseMimeType: 'application/json'),
+    );
+    _textModel = FirebaseVertexAI.instance.generativeModel(
+      model: 'gemini-2.5-flash',
+      // No JSON constraint - returns plain text
     );
   }
 
@@ -143,7 +156,7 @@ ${jsonEncode(candidatesJson)}
         reason: json['reason'] ?? '',
       );
     } catch (e) {
-      print("AI Error: $e");
+      debugPrint("AI Error: $e");
       return null;
     }
   }
@@ -207,42 +220,51 @@ ${jsonEncode(similarRecipesJson)}
         arrangement: json['arrangement'] ?? '',
       );
     } catch (e) {
-      print("AI Feedback Error: $e");
+      debugPrint("AI Feedback Error: $e");
       return null;
     }
   }
 
-  Future<List<String>> getShoppingSuggestions({
+  Future<List<ShoppingSuggestion>> getRelatedShoppingSuggestions({
+    required String addedItemName,
     required List<PantryItem> pantryItems,
     required List<MealRecord> recentMeals,
     required List<ShoppingItem> currentList,
   }) async {
-    final lowPantryItems =
-        pantryItems
-            .where(
-              (p) => p.estimatedAmount == 'なし' || p.estimatedAmount == '少し',
-            )
-            .map((p) => p.ingredientName)
-            .toList();
-
     final currentListNames = currentList.map((i) => i.name).toList();
+    final pantryNames = pantryItems
+        .where((p) => p.estimatedAmount != 'なし')
+        .map((p) => p.ingredientName)
+        .join(', ');
 
     final prompt = '''
 あなたは献立アシスタント「メッシー」です。
-ユーザーの状況に合わせて、買い物リストに追加すべき食材を3つ提案してください。
+ユーザーが買い物リストに「$addedItemName」を追加しました。
+これに関連して、一緒に買うべき食材を最大3つ提案してください。
+
+## 判断基準
+- 一般的に一緒に使われる食材（例：カレールー→じゃがいも、玉ねぎ）
+- 最近の食事履歴や冷蔵庫の中身から、消費してしまっていそうなもの
+- 季節的に合うもの
 
 ## ユーザー情報
-- 冷蔵庫で少なくなっているもの: ${lowPantryItems.join(', ')}
-- 最近作った料理: ${recentMeals.take(5).map((m) => m.recipeName).join(', ')}
+- 冷蔵庫にあるもの: $pantryNames
 - 現在の買い物リスト: ${currentListNames.join(', ')}
 - 季節: ${_getCurrentSeason()}
 
-## タスク
-1. 冷蔵庫の補充、または最近の傾向から推測して、買うべき食材を3つ挙げてください。
-2. すでに買い物リストにあるものは除外してください。
+## 除外基準
+- すでに買い物リストにあるもの
+- 冷蔵庫に「ある」となっているもの
 
 ## 出力形式（JSON配列）
-["食材A", "食材B", "食材C"]
+[
+  { "name": "提案食材名", "reason": "提案理由（「〜も一緒にどう？」のような短い質問形式）" }
+]
+
+## 理由の例
+- 「カレー作るなら玉ねぎも減ってない？」
+- 「パンなら牛乳も一緒にどう？」
+- 「トマト缶あるし、パスタも補充する？」
 ''';
 
     try {
@@ -255,65 +277,90 @@ ${jsonEncode(similarRecipesJson)}
       cleanText = cleanText.replaceAll(RegExp(r'^```\s*|```$'), '').trim();
 
       final List<dynamic> json = jsonDecode(cleanText);
-      return json.map((e) => e.toString()).toList();
+      return json
+          .map(
+            (e) => ShoppingSuggestion(
+              name: e['name'] as String,
+              reason: e['reason'] as String,
+            ),
+          )
+          .toList();
     } catch (e) {
-      print("Shopping Suggestion Error: $e");
+      debugPrint("Related Shopping Suggestion Error: $e");
       return [];
     }
   }
 
   /// Chat with Messie
-  /// Returns a text response from Messie
+  /// Returns a text response from Messie with context-aware suggestions
   Future<String> chatWithMessie({
     required String message,
     required UserSettings settings,
+    UserContext? userContext,
     List<MealRecord>? recentMeals,
     List<PantryItem>? pantryItems,
   }) async {
-    final recentMealsText =
-        recentMeals != null && recentMeals.isNotEmpty
-            ? recentMeals.take(5).map((m) => "${m.recipeName}").join(', ')
-            : 'なし';
-
-    final pantryText =
-        pantryItems != null && pantryItems.isNotEmpty
-            ? pantryItems
-                .where((p) => p.estimatedAmount != 'なし')
-                .map((p) => p.ingredientName)
-                .join(', ')
-            : '不明';
+    // Use UserContext if available, otherwise fall back to basic info
+    String contextInfo;
+    if (userContext != null) {
+      contextInfo = userContext.toPromptSummary();
+    } else {
+      final recentMealsText =
+          recentMeals != null && recentMeals.isNotEmpty
+              ? recentMeals.take(5).map((m) => m.recipeName).join(', ')
+              : 'なし';
+      final pantryText =
+          pantryItems != null && pantryItems.isNotEmpty
+              ? pantryItems
+                  .where((p) => p.estimatedAmount != 'なし')
+                  .map((p) => p.ingredientName)
+                  .join(', ')
+              : '不明';
+      contextInfo = '''
+## 冷蔵庫の状況
+- ありそうなもの: $pantryText
+- 最近の食事: $recentMealsText
+- 季節: ${_getCurrentSeason()}
+''';
+    }
 
     final prompt = '''
 あなたは献立アシスタント「メッシー」です。
 小型恐竜のキャラで、有能・実用的・ちょっとドライ、でも根は優しい性格です。
 語尾は必ず「〜っシー」にしてください。
 
-## ユーザー情報
-- 最近の食事: $recentMealsText
-- 冷蔵庫: $pantryText
-- 季節: ${_getCurrentSeason()}
+$contextInfo
+
+## ユーザー設定
+- 苦手な食材: ${settings.dislikedIngredients.isNotEmpty ? settings.dislikedIngredients.join(', ') : 'なし'}
+- 人数: ${settings.servingSize}人分
 
 ## ユーザーのメッセージ
 $message
 
 ## タスク
 ユーザーのメッセージに対して、メッシーとして返信してください。
-- 献立の相談なら、冷蔵庫の中身や最近の食事を考慮してアドバイスしてください。
-- 雑談なら、適度にドライに、でも親身に返してください。
-- 50文字以内で簡潔に返してください。
 
-## 返信例
-- 「その中なら、鶏肉で照り焼きにするのが簡単っシー」
-- 「今日は寒いから鍋もいいかもっシー」
-- 「了解っシー。無理せず適当にやるっシー」
+## 重要なルール
+- ユーザーが「○○がない」と言った場合、冷蔵庫にある食材で代替案を具体的に提案してください
+  例: 「玉ねぎがない」→「白菜を細かめに切って使っても美味しいっシー」
+- 代替案は冷蔵庫にありそうなものから選んでください
+- 「無理」「厳しい」だけでなく、「こうすればできる」という建設的な提案を
+- 60文字以内で簡潔に返してください
+- JSONではなく、プレーンテキストで返してください
+
+## 良い返信例
+- 「マヨなしでもヨーグルト+酢でタルタル風になるっシー」
+- 「玉ねぎないなら、白菜細かく切って入れても甘みが出て美味しいっシー」
+- 「鶏肉あるなら照り焼きが簡単っシー。甘辛で白米進むっシー」
 ''';
 
     try {
-      final response = await _model.generateContent([Content.text(prompt)]);
+      final response = await _textModel.generateContent([Content.text(prompt)]);
       final text = response.text;
       return text?.replaceAll(RegExp(r'\n+'), ' ').trim() ?? 'エラーが発生したっシー';
     } catch (e) {
-      print("Chat Error: $e");
+      debugPrint("Chat Error: $e");
       return '通信エラーっシー。もう一度試してほしいっシー';
     }
   }

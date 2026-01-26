@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:cheat_days/features/admin/presentation/recipe_editor_screen.dart';
 import 'package:cheat_days/features/recipes/data/recipe_repository.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
@@ -7,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cheat_days/features/admin/presentation/admin_login_screen.dart';
 import 'package:uuid/uuid.dart';
-import 'package:cheat_days/core/widgets/messie_mascot.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
@@ -240,78 +240,156 @@ final recipeListProvider = FutureProvider<List<Recipe>>((ref) async {
   return repo.getAllRecipes();
 });
 
-class _RecipeDataTable extends StatelessWidget {
+class _RecipeDataTable extends StatefulWidget {
   final List<Recipe> recipes;
   const _RecipeDataTable({required this.recipes});
 
   @override
+  State<_RecipeDataTable> createState() => _RecipeDataTableState();
+}
+
+class _RecipeDataTableState extends State<_RecipeDataTable> {
+  String _filter = 'all'; // all, has_image, no_image
+
+  @override
   Widget build(BuildContext context) {
-    if (recipes.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const MessieMascot(size: 200),
-            const SizedBox(height: 24),
-            Text(
-              "No recipes found.\nPaste JSON or Add Manually!",
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(color: Colors.grey[600]),
-            ),
-          ],
-        ),
-      );
+    List<Recipe> filteredRecipes = widget.recipes;
+    if (_filter == 'has_image') {
+      filteredRecipes =
+          widget.recipes.where((r) => r.imageUrl.isNotEmpty).toList();
+    } else if (_filter == 'no_image') {
+      filteredRecipes =
+          widget.recipes.where((r) => r.imageUrl.isEmpty).toList();
+    }
+
+    if (filteredRecipes.isEmpty && widget.recipes.isNotEmpty) {
+      // Only show empty state if filter yields nothing but recipes exist
     }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: Card(
-        child: SizedBox(
-          width: double.infinity,
-          child: DataTable(
-            showCheckboxColumn: false,
-            columns: const [
-              DataColumn(label: Text("Image")),
-              DataColumn(label: Text("Name")),
-              DataColumn(label: Text("Category")),
-              DataColumn(label: Text("Time")),
-              DataColumn(label: Text("Cost")),
-            ],
-            rows:
-                recipes.map((recipe) {
-                  return DataRow(
-                    onSelectChanged: (_) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => RecipeEditorScreen(recipe: recipe),
-                        ),
-                      );
-                    },
-                    cells: [
-                      DataCell(
-                        SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: Image.network(
-                            recipe.imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder:
-                                (_, __, ___) => const Icon(Icons.error),
-                          ),
-                        ),
-                      ),
-                      DataCell(Text(recipe.name)),
-                      DataCell(Text(recipe.category)),
-                      DataCell(Text("${recipe.timeMinutes} min")),
-                      DataCell(Text("¥${recipe.costYen}")),
-                    ],
-                  );
-                }).toList(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Filter Chips
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                FilterChip(
+                  label: const Text("All"),
+                  selected: _filter == 'all',
+                  onSelected: (b) => setState(() => _filter = 'all'),
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: const Text("No Image 🖼️❌"),
+                  selected: _filter == 'no_image',
+                  backgroundColor: Colors.red[50],
+                  selectedColor: Colors.red[100],
+                  onSelected: (b) => setState(() => _filter = 'no_image'),
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: const Text("Has Image 🖼️✅"),
+                  selected: _filter == 'has_image',
+                  onSelected: (b) => setState(() => _filter = 'has_image'),
+                ),
+              ],
+            ),
           ),
-        ),
+          const SizedBox(height: 16),
+
+          if (filteredRecipes.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: Text("No recipes match filter"),
+              ),
+            )
+          else
+            Card(
+              child: SizedBox(
+                width: double.infinity,
+                child: DataTable(
+                  showCheckboxColumn: false,
+                  columns: const [
+                    DataColumn(label: Text("Image")),
+                    DataColumn(label: Text("Name")),
+                    DataColumn(label: Text("Category")),
+                    DataColumn(label: Text("Action")),
+                  ],
+                  rows:
+                      filteredRecipes.map((recipe) {
+                        return DataRow(
+                          onSelectChanged: (_) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => RecipeEditorScreen(recipe: recipe),
+                              ),
+                            );
+                          },
+                          cells: [
+                            DataCell(
+                              SizedBox(
+                                width: 50,
+                                height: 50,
+                                child:
+                                    recipe.imageUrl.isNotEmpty
+                                        ? Image.network(
+                                          recipe.imageUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (_, __, ___) =>
+                                                  const Icon(Icons.error),
+                                        )
+                                        : Container(
+                                          color: Colors.grey[200],
+                                          child: const Icon(
+                                            Icons.image_not_supported,
+                                            size: 20,
+                                          ),
+                                        ),
+                              ),
+                            ),
+                            DataCell(Text(recipe.name)),
+                            DataCell(Text(recipe.category)),
+                            DataCell(
+                              recipe.imageUrl.isEmpty
+                                  ? IconButton(
+                                    icon: const Icon(
+                                      Icons.copy,
+                                      color: Colors.blue,
+                                    ),
+                                    tooltip: "Copy Generation Prompt",
+                                    onPressed: () {
+                                      final prompt =
+                                          "次の料理の画像をイラスト風に生成してください。指定以外のメニューは描かず。美味しそうに。\n${recipe.name}";
+                                      Clipboard.setData(
+                                        ClipboardData(text: prompt),
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            "Prompt copied to clipboard!",
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  )
+                                  : const SizedBox(),
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -26,6 +26,18 @@ class ShoppingListRepository {
         );
   }
 
+  /// One-time fetch of shopping list items
+  Future<List<ShoppingItem>> getItems(String userId) async {
+    final snapshot =
+        await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('shoppingList')
+            .orderBy('createdAt', descending: true)
+            .get();
+    return snapshot.docs.map((doc) => ShoppingItem.fromFirestore(doc)).toList();
+  }
+
   Future<void> addItem(String userId, ShoppingItem item) async {
     await _firestore
         .collection('users')

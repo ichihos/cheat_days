@@ -6,6 +6,7 @@ class UserSettings {
   final bool isOnboardingComplete;
   final int totalRecordsCount;
   final DateTime? lastRecordDate;
+  final DateTime? lastFridgeCheckAt;
 
   UserSettings({
     this.servingSize = 2,
@@ -15,6 +16,7 @@ class UserSettings {
     this.isOnboardingComplete = false,
     this.totalRecordsCount = 0,
     this.lastRecordDate,
+    this.lastFridgeCheckAt,
   });
 
   factory UserSettings.fromMap(Map<String, dynamic> map) {
@@ -29,6 +31,10 @@ class UserSettings {
           map['lastRecordDate'] != null
               ? DateTime.tryParse(map['lastRecordDate'])
               : null,
+      lastFridgeCheckAt:
+          map['lastFridgeCheckAt'] != null
+              ? DateTime.tryParse(map['lastFridgeCheckAt'])
+              : null,
     );
   }
 
@@ -41,6 +47,7 @@ class UserSettings {
       'isOnboardingComplete': isOnboardingComplete,
       'totalRecordsCount': totalRecordsCount,
       'lastRecordDate': lastRecordDate?.toIso8601String(),
+      'lastFridgeCheckAt': lastFridgeCheckAt?.toIso8601String(),
     };
   }
 
@@ -52,6 +59,7 @@ class UserSettings {
     bool? isOnboardingComplete,
     int? totalRecordsCount,
     DateTime? lastRecordDate,
+    DateTime? lastFridgeCheckAt,
   }) {
     return UserSettings(
       servingSize: servingSize ?? this.servingSize,
@@ -61,6 +69,7 @@ class UserSettings {
       isOnboardingComplete: isOnboardingComplete ?? this.isOnboardingComplete,
       totalRecordsCount: totalRecordsCount ?? this.totalRecordsCount,
       lastRecordDate: lastRecordDate ?? this.lastRecordDate,
+      lastFridgeCheckAt: lastFridgeCheckAt ?? this.lastFridgeCheckAt,
     );
   }
 }

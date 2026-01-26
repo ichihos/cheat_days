@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:cheat_days/features/recipes/data/recipe_repository.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
@@ -248,6 +248,20 @@ class _RecipeEditorScreenState extends ConsumerState<RecipeEditorScreen> {
                 IconButton(
                   onPressed: _isUploading ? null : _pickAndUploadImage,
                   icon: const Icon(Icons.image_search),
+                ),
+                IconButton(
+                  tooltip: 'Generate Image Prompt',
+                  onPressed: () {
+                    final prompt =
+                        "次の料理の画像をイラスト風に生成してください。指定以外のメニューは描かず。美味しそうに。\n${_nameCtrl.text}";
+                    Clipboard.setData(ClipboardData(text: prompt));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Image prompt copied to clipboard!"),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.copy),
                 ),
               ],
             ),

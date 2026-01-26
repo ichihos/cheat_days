@@ -6,7 +6,7 @@ class MessieMascot extends StatefulWidget {
 
   const MessieMascot({
     super.key,
-    this.size = 150.0,
+    this.size = 190.0,
     this.duration = const Duration(seconds: 2),
   });
 

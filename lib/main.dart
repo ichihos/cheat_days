@@ -1,6 +1,7 @@
 import 'package:cheat_days/core/theme/app_theme.dart';
 import 'package:cheat_days/features/auth/data/user_repository.dart';
 import 'package:cheat_days/features/auth/repository/auth_repository.dart';
+import 'package:cheat_days/features/context/presentation/fridge_check_dialog.dart';
 import 'package:cheat_days/features/home/presentation/home_screen.dart';
 import 'package:cheat_days/features/home/presentation/yesterday_check_dialog.dart';
 import 'package:cheat_days/features/onboarding/presentation/onboarding_screen.dart';
@@ -112,14 +113,26 @@ class MainScaffoldWithCheck extends ConsumerStatefulWidget {
 
 class _MainScaffoldWithCheckState extends ConsumerState<MainScaffoldWithCheck> {
   bool _hasCheckedYesterday = false;
+  bool _hasCheckedFridge = false;
 
   @override
   void initState() {
     super.initState();
     // Schedule the check after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkYesterdayMeal();
+      _runStartupChecks();
     });
+  }
+
+  Future<void> _runStartupChecks() async {
+    await _checkYesterdayMeal();
+    await _checkFridgeStatus();
+
+    // Update last access time
+    final user = ref.read(authRepositoryProvider).currentUser;
+    if (user != null) {
+      ref.read(authRepositoryProvider).updateLastAccess(user.uid);
+    }
   }
 
   Future<void> _checkYesterdayMeal() async {
@@ -128,11 +141,29 @@ class _MainScaffoldWithCheckState extends ConsumerState<MainScaffoldWithCheck> {
 
     final shouldShow = await shouldShowYesterdayCheck(ref);
     if (shouldShow && mounted) {
-      showDialog(
+      await showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => const YesterdayCheckDialog(),
       );
+    }
+  }
+
+  Future<void> _checkFridgeStatus() async {
+    if (_hasCheckedFridge) return;
+    _hasCheckedFridge = true;
+
+    try {
+      final settings = await ref.read(userSettingsProvider.future);
+      if (FridgeCheckDialog.needsCheck(settings) && mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => const FridgeCheckDialog(),
+        );
+      }
+    } catch (e) {
+      // Ignore errors - fridge check is not critical
     }
   }
 

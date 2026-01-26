@@ -41,4 +41,20 @@ class PantryItem {
       'lastUsed': lastUsed != null ? Timestamp.fromDate(lastUsed!) : null,
     };
   }
+
+  PantryItem copyWith({
+    String? id,
+    String? ingredientName,
+    String? estimatedAmount,
+    DateTime? lastPurchased,
+    DateTime? lastUsed,
+  }) {
+    return PantryItem(
+      id: id ?? this.id,
+      ingredientName: ingredientName ?? this.ingredientName,
+      estimatedAmount: estimatedAmount ?? this.estimatedAmount,
+      lastPurchased: lastPurchased ?? this.lastPurchased,
+      lastUsed: lastUsed ?? this.lastUsed,
+    );
+  }
 }

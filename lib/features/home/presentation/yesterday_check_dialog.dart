@@ -27,29 +27,42 @@ class _YesterdayCheckDialogState extends ConsumerState<YesterdayCheckDialog> {
 
     setState(() => _isLoading = true);
 
-    final user = ref.read(authStateProvider).value;
-    if (user == null) return;
+    try {
+      final user = ref.read(authStateProvider).value;
+      if (user == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
 
-    final recipeName = _mealController.text.trim();
-    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+      final recipeName = _mealController.text.trim();
+      final yesterday = DateTime.now().subtract(const Duration(days: 1));
 
-    final record = MealRecord(
-      id: '',
-      recipeName: recipeName,
-      mealType: _selectedMealType,
-      date: yesterday,
-      createdAt: DateTime.now(),
-    );
+      final record = MealRecord(
+        id: '',
+        recipeName: recipeName,
+        mealType: _selectedMealType,
+        date: yesterday,
+        createdAt: DateTime.now(),
+      );
 
-    await ref.read(mealRecordRepositoryProvider).addRecord(user.uid, record);
+      await ref.read(mealRecordRepositoryProvider).addRecord(user.uid, record);
 
-    // Update record count
-    await _incrementRecordCount();
+      // Update record count
+      await _incrementRecordCount();
 
-    // Get AI feedback
-    await _showRecipeFeedback(recipeName);
+      // Get AI feedback
+      // Note: We don't show another loading dialog here, just wait
+      await _showRecipeFeedback(recipeName);
 
-    if (mounted) Navigator.pop(context, true);
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('エラーが発生しました: $e')));
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   Future<void> _incrementRecordCount() async {
@@ -78,32 +91,20 @@ class _YesterdayCheckDialogState extends ConsumerState<YesterdayCheckDialog> {
       final aiService = ref.read(aiServiceProvider);
       final recipes = await ref.read(recipeRepositoryProvider).getAllRecipes();
 
-      if (mounted) {
-        // Show loading indicator
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => const Center(child: CircularProgressIndicator()),
-        );
-      }
-
       final feedback = await aiService.getRecipeFeedback(
         recipeName: recipeName,
         availableRecipes: recipes,
       );
 
-      if (mounted) {
-        Navigator.pop(context); // Dismiss loading
-        if (feedback != null) {
-          showDialog(
-            context: context,
-            builder: (ctx) => FeedbackDialog(initialFeedback: feedback),
-          );
-        }
+      if (mounted && feedback != null) {
+        showDialog(
+          context: context,
+          builder: (ctx) => FeedbackDialog(initialFeedback: feedback),
+        );
       }
     } catch (e) {
-      if (mounted) Navigator.pop(context); // Dismiss loading on error
       debugPrint('Failed to get recipe feedback: $e');
+      // Do NOT pop here, just log error. Parent will pop logic.
     }
   }
 

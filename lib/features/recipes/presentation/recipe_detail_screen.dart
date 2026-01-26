@@ -1,6 +1,7 @@
 import 'package:cheat_days/features/auth/repository/auth_repository.dart';
 import 'package:cheat_days/features/records/data/meal_record_repository.dart';
 import 'package:cheat_days/features/records/domain/meal_record.dart';
+import 'package:cheat_days/features/recipes/data/recipe_repository.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,8 +33,31 @@ class RecipeDetailScreen extends ConsumerWidget {
                 recipe.imageUrl,
                 fit: BoxFit.cover,
                 errorBuilder:
-                    (context, error, stackTrace) =>
-                        Container(color: Colors.grey[300]),
+                    (context, error, stackTrace) => Container(
+                      decoration:
+                          recipe.tags.contains('AI考案')
+                              ? const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF6A11CB),
+                                    Color(0xFF2575FC),
+                                  ],
+                                ),
+                              )
+                              : BoxDecoration(color: Colors.grey[300]),
+                      child:
+                          recipe.tags.contains('AI考案')
+                              ? const Center(
+                                child: Icon(
+                                  Icons.auto_awesome,
+                                  size: 60,
+                                  color: Colors.white24,
+                                ),
+                              )
+                              : null,
+                    ),
               ),
             ),
           ),
@@ -138,7 +162,43 @@ class RecipeDetailScreen extends ConsumerWidget {
 
                   const SizedBox(height: 40),
 
-                  // Action Button
+                  // Action Buttons
+                  if (recipe.tags.contains('AI考案'))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            final user =
+                                ref.read(authRepositoryProvider).currentUser;
+                            if (user != null) {
+                              try {
+                                await ref
+                                    .read(recipeRepositoryProvider)
+                                    .addRecipe(recipe);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('レシピを保存しました！'),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('エラー: $e')),
+                                  );
+                                }
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.bookmark_add),
+                          label: const Text("レシピを保存する"),
+                        ),
+                      ),
+                    ),
+
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
@@ -146,6 +206,17 @@ class RecipeDetailScreen extends ConsumerWidget {
                         final user =
                             ref.read(authRepositoryProvider).currentUser;
                         if (user != null) {
+                          // Auto-save generated recipe if used
+                          if (recipe.tags.contains('AI考案')) {
+                            try {
+                              await ref
+                                  .read(recipeRepositoryProvider)
+                                  .addRecipe(recipe);
+                            } catch (_) {
+                              // Ignore duplicate/error on auto-save
+                            }
+                          }
+
                           final record = MealRecord(
                             id: const Uuid().v4(),
                             recipeId: recipe.id,

@@ -51,4 +51,14 @@ class AuthRepository {
   }
 
   User? get currentUser => _firebaseAuth.currentUser;
+
+  Future<void> updateLastAccess(String uid) async {
+    try {
+      await _firestore.collection('users').doc(uid).set({
+        'lastAccessAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print("Error updating last access: $e");
+    }
+  }
 }
