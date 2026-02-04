@@ -42,6 +42,12 @@ service cloud.firestore {
       match /pantry/{itemId} {
         allow read, write: if isOwner(userId);
       }
+      match /daily_suggestions/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /customized_recipes/{docId} {
+        allow read, write: if isOwner(userId);
+      }
     }
   }
 }

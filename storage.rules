@@ -11,6 +11,13 @@ service firebase.storage {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
+    // レシピの画像（管理用）
+    match /recipes/{fileName} {
+      allow read: if true;
+      // 認証済みユーザーなら誰でも管理画面からアップロード可能とする（簡易化）
+      allow write: if request.auth != null;
+    }
+
     // その他のパスは拒否
     match /{allPaths=**} {
       allow read, write: if false;

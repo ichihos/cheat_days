@@ -14,6 +14,9 @@ enum MessieActionType {
   /// 現在のレシピを調整（材料減・代替等）
   adjustRecipe,
 
+  /// レシピの手順を編集
+  editRecipeSteps,
+
   /// 買い物リストにアイテムを追加
   addToShopping,
 
@@ -46,6 +49,9 @@ class MessieAction {
       case 'adjust_recipe':
         type = MessieActionType.adjustRecipe;
         break;
+      case 'edit_recipe_steps':
+        type = MessieActionType.editRecipeSteps;
+        break;
       case 'add_to_shopping':
         type = MessieActionType.addToShopping;
         break;
@@ -77,6 +83,9 @@ class MessieAction {
         break;
       case MessieActionType.adjustRecipe:
         typeStr = 'adjust_recipe';
+        break;
+      case MessieActionType.editRecipeSteps:
+        typeStr = 'edit_recipe_steps';
         break;
       case MessieActionType.addToShopping:
         typeStr = 'add_to_shopping';

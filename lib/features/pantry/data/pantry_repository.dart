@@ -52,6 +52,28 @@ class PantryRepository {
         .update(item.toMap());
   }
 
+  /// アイテムが存在すれば更新、なければ作成（食材名で検索）
+  Future<void> upsertByName(String userId, PantryItem item) async {
+    final collection = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('pantry');
+
+    // 食材名で既存アイテムを検索
+    final existing = await collection
+        .where('ingredientName', isEqualTo: item.ingredientName)
+        .limit(1)
+        .get();
+
+    if (existing.docs.isNotEmpty) {
+      // 既存アイテムを更新
+      await collection.doc(existing.docs.first.id).update(item.toMap());
+    } else {
+      // 新規作成
+      await collection.add(item.toMap());
+    }
+  }
+
   Future<void> deleteItem(String userId, String itemId) async {
     await _firestore
         .collection('users')

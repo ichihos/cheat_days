@@ -89,12 +89,12 @@ class _FridgeCheckDialogState extends ConsumerState<FridgeCheckDialog> {
 
       final pantryRepo = ref.read(pantryRepositoryProvider);
 
-      // パントリーを更新
+      // パントリーを更新（存在すれば更新、なければ作成）
       for (final entry in _fridgeStatus.entries) {
-        await pantryRepo.updateItem(
+        await pantryRepo.upsertByName(
           user.uid,
           PantryItem(
-            id: entry.key.hashCode.toString(),
+            id: '', // upsertByNameでは使用しない
             ingredientName: entry.key,
             estimatedAmount: entry.value,
             lastPurchased: entry.value != 'なし' ? DateTime.now() : null,

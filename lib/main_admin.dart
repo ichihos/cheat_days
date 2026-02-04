@@ -12,11 +12,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // App Check for Web (using Debug for now, ReCaptchaEnterprise in prod)
+  // App Check - skip for web admin during development
+  // Note: For production, set up reCAPTCHA Enterprise in Firebase Console
   await FirebaseAppCheck.instance.activate(
-    webProvider: ReCaptchaV3Provider(
-      'recaptcha-site-key',
-    ), // Placeholder or Debug
     androidProvider: AndroidProvider.debug,
     appleProvider: AppleProvider.debug,
   );

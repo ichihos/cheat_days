@@ -3,6 +3,7 @@ import 'package:cheat_days/core/constants/app_constants.dart';
 import 'package:cheat_days/features/agent/domain/messie_action.dart';
 import 'package:cheat_days/features/agent/presentation/messie_agent_provider.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
+import 'package:cheat_days/features/recipes/domain/menu_slot.dart';
 import 'package:cheat_days/features/recipes/presentation/daily_suggestion_provider.dart';
 import 'package:cheat_days/features/recipes/presentation/recipe_detail_screen.dart';
 import 'package:flutter/material.dart';
@@ -19,8 +20,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final PageController _menuPageController = PageController();
   bool _isChatting = false;
-  bool _showSideDish = false;
+  int _currentMenuPage = 0;
 
   // Static variable to track if initial slide-in has happened in this app session
   static bool _hasAnimatedEntry = false;
@@ -32,9 +34,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   late Animation<Offset> _slideAnimation;
   late Animation<double> _swayAnimation;
 
+  final ValueNotifier<bool> _showHeadeTitle = ValueNotifier(false);
+
   @override
   void initState() {
     super.initState();
+    // Monitor scroll to toggle header title visibility
+    _scrollController.addListener(() {
+      final shouldShow =
+          _scrollController.hasClients && _scrollController.offset > 280;
+      if (_showHeadeTitle.value != shouldShow) {
+        _showHeadeTitle.value = shouldShow;
+      }
+    });
+
     // Slide-in animation (plays once)
     _messieSlideController = AnimationController(
       vsync: this,
@@ -72,9 +85,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _menuPageController.dispose();
     _messieSlideController.dispose();
     _messieSwayController.dispose();
     _swayTimer?.cancel();
+    _showHeadeTitle.dispose();
     super.dispose();
   }
 
@@ -187,10 +202,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             .syncWithDailySuggestion(next.value!);
       }
 
-      // Reset side dish toggle if recipe changes
+      // Reset page index if recipe changes
       if (previous?.value?.recipe?.id != next.value?.recipe?.id) {
         setState(() {
-          _showSideDish = false;
+          _currentMenuPage = 0;
+          if (_menuPageController.hasClients) {
+            _menuPageController.jumpToPage(0);
+          }
         });
       }
     });
@@ -296,8 +314,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     MessieAgentState agentState,
   ) {
     final comment = agentState.lastMessage;
-    final sideDish = agentState.sideDish;
     final chatHistory = agentState.chatHistory;
+    final menuSlots = agentState.menuSlots;
+
+    // 表示用のスロット（空スロットを除外したもの + 追加ボタン用）
+    final displaySlots = menuSlots.where((s) => !s.isEmpty).toList();
 
     return Column(
       children: [
@@ -311,56 +332,89 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 backgroundColor: Colors.white,
                 surfaceTintColor: Colors.white,
                 elevation: 1,
+                leadingWidth: 160,
                 leading: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.only(
+                    left: 16.0,
+                    top: 4,
+                    bottom: 4,
+                  ),
                   child: Image.asset(
                     'assets/images/logo.png',
+                    fit: BoxFit.contain,
                     errorBuilder: (_, __, ___) => const Text("🦕"),
                   ),
                 ),
-                title: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => RecipeDetailScreen(recipe: recipe),
+                title: ValueListenableBuilder<bool>(
+                  valueListenable: _showHeadeTitle,
+                  builder: (context, show, child) {
+                    final currentSlot = displaySlots.isNotEmpty && _currentMenuPage < displaySlots.length
+                        ? displaySlots[_currentMenuPage]
+                        : null;
+                    final currentRecipe = currentSlot?.recipe ?? recipe;
+                    return AnimatedOpacity(
+                      opacity: show ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RecipeDetailScreen(recipe: currentRecipe),
+                            ),
+                          );
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '今日の献立',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            Text(
+                              currentRecipe.name,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '今日の献立',
-                        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                      ),
-                      Text(
-                        recipe.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
                 ),
                 actions: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => RecipeDetailScreen(recipe: recipe),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: _showHeadeTitle,
+                    builder: (context, show, child) {
+                      return AnimatedOpacity(
+                        opacity: show ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            final currentSlot = displaySlots.isNotEmpty && _currentMenuPage < displaySlots.length
+                                ? displaySlots[_currentMenuPage]
+                                : null;
+                            final currentRecipe = currentSlot?.recipe ?? recipe;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RecipeDetailScreen(recipe: currentRecipe),
+                              ),
+                            );
+                          },
                         ),
                       );
                     },
@@ -372,41 +426,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               SliverList(
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 12),
-                  // Main Recipe Card
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => RecipeDetailScreen(recipe: recipe),
-                          ),
-                        );
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 8, left: 4),
-                            child: Text(
-                              "主菜",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 280,
-                            child: _RecipeCard(recipe: recipe),
-                          ),
-                        ],
+
+                  // Menu Carousel with PageView
+                  if (displaySlots.isNotEmpty) ...[
+                    SizedBox(
+                      height: 320,
+                      child: PageView.builder(
+                        controller: _menuPageController,
+                        itemCount: displaySlots.length,
+                        onPageChanged: (index) {
+                          setState(() => _currentMenuPage = index);
+                          ref.read(messieAgentProvider.notifier).setCurrentSlotIndex(index);
+                        },
+                        itemBuilder: (context, index) {
+                          final slot = displaySlots[index];
+                          return _buildMenuSlotCard(context, slot);
+                        },
                       ),
                     ),
-                  ),
 
-                  // Side Dish Card (if shown)
-                  if (_showSideDish && sideDish != null) ...[
-                    const SizedBox(height: 20),
+                    // Page Indicator
+                    if (displaySlots.length > 1) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          displaySlots.length,
+                          (index) => _buildPageIndicator(index, displaySlots[index].type),
+                        ),
+                      ),
+                    ],
+                  ] else ...[
+                    // Fallback: 単一レシピカード
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: GestureDetector(
@@ -414,126 +465,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder:
-                                  (context) =>
-                                      RecipeDetailScreen(recipe: sideDish),
+                              builder: (context) => RecipeDetailScreen(recipe: recipe),
                             ),
                           );
                         },
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 8,
-                                left: 4,
-                              ),
-                              child: Row(
-                                children: [
-                                  const Text(
-                                    "副菜",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "(${sideDish.name})",
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 180,
-                              child: _RecipeCard(recipe: sideDish),
-                            ),
-                          ],
+                        child: SizedBox(
+                          height: 280,
+                          child: _RecipeCard(recipe: recipe),
                         ),
                       ),
                     ),
                   ],
 
                   const SizedBox(height: 20),
-
-                  // Quick Action Chips
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _ActionChip(
-                          label: '時短',
-                          onTap: () => ref.refresh(dailySuggestionProvider),
-                        ),
-                        _ActionChip(
-                          label: '節約',
-                          onTap: () => ref.refresh(dailySuggestionProvider),
-                        ),
-                        if (!_showSideDish && sideDish != null)
-                          _ActionChip(
-                            label: 'もう一品',
-                            isPrimary: true,
-                            onTap: () => setState(() => _showSideDish = true),
-                          ),
-                        _ActionChip(
-                          label: '別の主菜',
-                          onTap: () => ref.refresh(dailySuggestionProvider),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Chat Section Header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: [
-                        Text(
-                          'メッシーとの会話',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        const Spacer(),
-                        if (chatHistory.isNotEmpty)
-                          GestureDetector(
-                            onTap:
-                                () => _scrollController.animateTo(
-                                  0,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeOut,
-                                ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.arrow_upward,
-                                  size: 14,
-                                  color: Colors.grey[500],
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'トップへ',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[500],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-
                   const SizedBox(height: 16),
 
                   // Chat History
@@ -567,49 +511,79 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
           child: SafeArea(
             top: false,
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: const InputDecoration(
-                        hintText: 'メッシーに話しかける...',
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _ActionChip(
+                        label: '副菜を追加',
+                        onTap: () => _addSideDish(context),
+                        compact: true,
                       ),
-                      onSubmitted: (_) => _sendMessage(),
-                      enabled: !_isChatting,
-                    ),
+                      const SizedBox(width: 8),
+                      _ActionChip(
+                        label: '主食を追加',
+                        onTap: () => _addStaple(context),
+                        compact: true,
+                      ),
+                      const SizedBox(width: 8),
+                      _ActionChip(
+                        label: 'メニューを変える',
+                        onTap: () => ref.refresh(dailySuggestionProvider),
+                        compact: true,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    onPressed: _isChatting ? null : _sendMessage,
-                    icon:
-                        _isChatting
-                            ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                            : const Icon(Icons.send, color: Colors.white),
-                  ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: TextField(
+                          controller: _messageController,
+                          decoration: const InputDecoration(
+                            hintText: 'メッシーに話しかける...',
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                          onSubmitted: (_) => _sendMessage(),
+                          enabled: !_isChatting,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        onPressed: _isChatting ? null : _sendMessage,
+                        icon:
+                            _isChatting
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                                : const Icon(Icons.send, color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -617,6 +591,127 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ),
       ],
     );
+  }
+
+  Widget _buildMenuSlotCard(BuildContext context, MenuSlot slot) {
+    final recipe = slot.recipe;
+    if (recipe == null) return const SizedBox();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RecipeDetailScreen(recipe: recipe),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // スロットタイプラベル
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8, left: 4),
+              child: Row(
+                children: [
+                  Text(
+                    slot.type.emoji,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    slot.type.label,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const Spacer(),
+                  // 削除ボタン（主菜以外）
+                  if (slot.type != MenuSlotType.main)
+                    GestureDetector(
+                      onTap: () => _removeSlot(slot.id),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.close,
+                          size: 18,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: _RecipeCard(recipe: recipe),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageIndicator(int index, MenuSlotType type) {
+    final isActive = index == _currentMenuPage;
+    return GestureDetector(
+      onTap: () {
+        _menuPageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isActive ? _getSlotColor(type) : Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          type.label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            color: isActive ? Colors.white : Colors.grey[600],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getSlotColor(MenuSlotType type) {
+    switch (type) {
+      case MenuSlotType.main:
+        return Colors.orange;
+      case MenuSlotType.side:
+        return Colors.green;
+      case MenuSlotType.staple:
+        return Colors.brown;
+      case MenuSlotType.soup:
+        return Colors.blue;
+    }
+  }
+
+  void _addSideDish(BuildContext context) {
+    // TODO: 副菜選択ダイアログを表示
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('メッシーに「副菜追加して」と話しかけてね')),
+    );
+  }
+
+  void _addStaple(BuildContext context) {
+    // TODO: 主食選択ダイアログを表示
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('メッシーに「ご飯も提案して」と話しかけてね')),
+    );
+  }
+
+  void _removeSlot(String slotId) {
+    ref.read(messieAgentProvider.notifier).removeMenuSlot(slotId);
   }
 
   Widget _buildLargeMessageBubble(ChatMessage message) {
@@ -640,11 +735,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 },
                 child: Image.asset(
                   'assets/images/messie.png',
-                  width: 70,
-                  height: 70,
+                  width: 100,
+                  height: 100,
                   errorBuilder:
                       (_, __, ___) =>
-                          const Text("🦕", style: TextStyle(fontSize: 40)),
+                          const Text("🦕", style: TextStyle(fontSize: 60)),
                 ),
               ),
             ),
@@ -776,29 +871,7 @@ class _RecipeCard extends StatelessWidget {
             ),
           ),
 
-          // Tap hint
-          Positioned(
-            top: 12,
-            right: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.touch_app, size: 14, color: Colors.white70),
-                  SizedBox(width: 4),
-                  Text(
-                    'レシピを見る',
-                    style: TextStyle(fontSize: 11, color: Colors.white70),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // Tap hint removed
         ],
       ),
     );
@@ -855,26 +928,30 @@ class _InfoChip extends StatelessWidget {
 class _ActionChip extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
-  final bool isPrimary;
+  final bool compact;
 
   const _ActionChip({
     required this.label,
     required this.onTap,
-    this.isPrimary = false,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return ActionChip(
+      visualDensity: compact ? VisualDensity.compact : null,
       label: Text(
         label,
         style: TextStyle(
-          color: isPrimary ? Colors.white : Colors.black87,
-          fontWeight: isPrimary ? FontWeight.bold : FontWeight.normal,
+          color: Colors.black87,
+          fontSize: compact ? 12 : null,
         ),
       ),
-      backgroundColor:
-          isPrimary ? Theme.of(context).colorScheme.primary : Colors.grey[200],
+      padding:
+          compact
+              ? const EdgeInsets.symmetric(horizontal: 4, vertical: 0)
+              : null,
+      backgroundColor: Colors.grey[200],
       onPressed: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );

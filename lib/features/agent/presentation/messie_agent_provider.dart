@@ -2,10 +2,12 @@ import 'package:cheat_days/features/agent/data/messie_agent_service.dart';
 import 'package:cheat_days/features/agent/domain/messie_action.dart';
 import 'package:cheat_days/features/auth/repository/auth_repository.dart';
 import 'package:cheat_days/features/auth/data/user_repository.dart';
-import 'package:cheat_days/features/auth/domain/user_settings.dart';
 import 'package:cheat_days/features/context/data/user_context_provider.dart';
 import 'package:cheat_days/features/recipes/data/recipe_repository.dart';
+import 'package:cheat_days/features/recipes/data/customized_recipe_repository.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
+import 'package:cheat_days/features/recipes/domain/customized_recipe.dart';
+import 'package:cheat_days/features/recipes/domain/menu_slot.dart';
 import 'package:cheat_days/features/records/data/meal_record_repository.dart';
 import 'package:cheat_days/features/records/domain/meal_record.dart';
 import 'package:cheat_days/features/shopping_list/data/shopping_list_repository.dart';
@@ -26,6 +28,10 @@ class ChatMessage {
 class MessieAgentState {
   final Recipe? currentSuggestion;
   final Recipe? sideDish;
+  final List<MenuSlot> menuSlots; // 献立スロット（主菜、副菜、主食など）
+  final int currentSlotIndex; // 現在表示中のスロットインデックス
+  final String? customizedRecipeId;
+  final String? sideDishCustomizedRecipeId;
   final Map<String, dynamic>? recipeAdjustments;
   final bool isProcessing;
   final String? lastMessage;
@@ -35,6 +41,10 @@ class MessieAgentState {
   const MessieAgentState({
     this.currentSuggestion,
     this.sideDish,
+    this.menuSlots = const [],
+    this.currentSlotIndex = 0,
+    this.customizedRecipeId,
+    this.sideDishCustomizedRecipeId,
     this.recipeAdjustments,
     this.isProcessing = false,
     this.lastMessage,
@@ -42,9 +52,22 @@ class MessieAgentState {
     this.chatHistory = const [],
   });
 
+  /// 現在表示中のスロット
+  MenuSlot? get currentSlot =>
+      menuSlots.isNotEmpty && currentSlotIndex < menuSlots.length
+          ? menuSlots[currentSlotIndex]
+          : null;
+
+  /// 現在表示中のレシピ
+  Recipe? get currentRecipe => currentSlot?.recipe ?? currentSuggestion;
+
   MessieAgentState copyWith({
     Recipe? currentSuggestion,
     Recipe? sideDish,
+    List<MenuSlot>? menuSlots,
+    int? currentSlotIndex,
+    String? customizedRecipeId,
+    String? sideDishCustomizedRecipeId,
     Map<String, dynamic>? recipeAdjustments,
     bool? isProcessing,
     String? lastMessage,
@@ -54,6 +77,11 @@ class MessieAgentState {
     return MessieAgentState(
       currentSuggestion: currentSuggestion ?? this.currentSuggestion,
       sideDish: sideDish ?? this.sideDish,
+      menuSlots: menuSlots ?? this.menuSlots,
+      currentSlotIndex: currentSlotIndex ?? this.currentSlotIndex,
+      customizedRecipeId: customizedRecipeId ?? this.customizedRecipeId,
+      sideDishCustomizedRecipeId:
+          sideDishCustomizedRecipeId ?? this.sideDishCustomizedRecipeId,
       recipeAdjustments: recipeAdjustments ?? this.recipeAdjustments,
       isProcessing: isProcessing ?? this.isProcessing,
       lastMessage: lastMessage ?? this.lastMessage,
@@ -79,7 +107,7 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
   }
 
   /// DailySuggestionStateと同期
-  void syncWithDailySuggestion(DailySuggestionState dailyState) {
+  Future<void> syncWithDailySuggestion(DailySuggestionState dailyState) async {
     if (dailyState.recipe != null &&
         dailyState.recipe!.id != state.currentSuggestion?.id) {
       final initialComment = dailyState.messieComment;
@@ -88,14 +116,113 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
         newHistory.add(ChatMessage(text: initialComment, isUser: false));
       }
 
+      // カスタマイズ済みレシピを初期化
+      final user = _ref.read(authStateProvider).value;
+      String? customizedId;
+      String? sideDishCustomizedId;
+      Recipe? displayRecipe = dailyState.recipe;
+      Recipe? displaySideDish = dailyState.sideDish;
+
+      if (user != null && dailyState.recipe != null) {
+        try {
+          final customizedRepo = _ref.read(customizedRecipeRepositoryProvider);
+
+          // メインレシピの初期化
+          final customized = await customizedRepo.initializeTodaysRecipe(
+            user.uid,
+            dailyState.recipe!,
+          );
+          customizedId = customized.id;
+          displayRecipe = customized.recipe;
+
+          // 副菜の初期化
+          if (dailyState.sideDish != null) {
+            final sideDishCustomized =
+                await customizedRepo.initializeSideDishRecipe(
+                  user.uid,
+                  dailyState.sideDish!,
+                );
+            sideDishCustomizedId = sideDishCustomized.id;
+            displaySideDish = sideDishCustomized.recipe;
+          }
+        } catch (e) {
+          // 初期化に失敗してもオリジナルレシピを表示
+        }
+      }
+
+      // メニュースロットを作成
+      final slots = <MenuSlot>[];
+
+      // 主菜
+      if (displayRecipe != null) {
+        slots.add(MenuSlot(
+          id: 'main_${displayRecipe.id}',
+          type: MenuSlotType.main,
+          recipe: displayRecipe,
+          isRequired: true,
+        ));
+      }
+
+      // 副菜
+      if (displaySideDish != null) {
+        slots.add(MenuSlot(
+          id: 'side_${displaySideDish.id}',
+          type: MenuSlotType.side,
+          recipe: displaySideDish,
+        ));
+      }
+
+      // 主食スロット（主菜が麺類やご飯ものでない場合）
+      final mainCategory = displayRecipe?.category ?? '';
+      if (mainCategory != 'noodle' && mainCategory != 'rice') {
+        slots.add(MenuSlot.empty(MenuSlotType.staple));
+      }
+
       state = state.copyWith(
-        currentSuggestion: dailyState.recipe,
-        sideDish: dailyState.sideDish,
+        currentSuggestion: displayRecipe,
+        sideDish: displaySideDish,
+        menuSlots: slots,
+        currentSlotIndex: 0,
+        customizedRecipeId: customizedId,
+        sideDishCustomizedRecipeId: sideDishCustomizedId,
         recipeAdjustments: null,
         chatHistory: newHistory,
         lastMessage: initialComment,
       );
     }
+  }
+
+  /// 現在のスロットインデックスを更新
+  void setCurrentSlotIndex(int index) {
+    if (index >= 0 && index < state.menuSlots.length) {
+      state = state.copyWith(currentSlotIndex: index);
+    }
+  }
+
+  /// スロットを追加
+  void addMenuSlot(MenuSlot slot) {
+    final newSlots = [...state.menuSlots, slot];
+    state = state.copyWith(menuSlots: newSlots);
+  }
+
+  /// スロットを削除
+  void removeMenuSlot(String slotId) {
+    final newSlots = state.menuSlots.where((s) => s.id != slotId).toList();
+    state = state.copyWith(
+      menuSlots: newSlots,
+      currentSlotIndex: state.currentSlotIndex.clamp(0, newSlots.length - 1),
+    );
+  }
+
+  /// スロットのレシピを更新
+  void updateSlotRecipe(String slotId, Recipe recipe) {
+    final newSlots = state.menuSlots.map((slot) {
+      if (slot.id == slotId) {
+        return slot.copyWith(recipe: recipe, isEmpty: false);
+      }
+      return slot;
+    }).toList();
+    state = state.copyWith(menuSlots: newSlots);
   }
 
   /// ユーザーメッセージを処理
@@ -117,9 +244,7 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
         userContext: userContext,
         currentSuggestion: state.currentSuggestion,
         availableRecipes: recipes,
-        chatHistory:
-            state
-                .chatHistory, // Pass history (excluding current message which is added separately in prompt but useful to verify)
+        chatHistory: state.chatHistory,
       );
 
       for (final action in response.actions) {
@@ -153,7 +278,10 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
         await _handleChangeSuggestion(action, recipes);
         break;
       case MessieActionType.adjustRecipe:
-        _handleAdjustRecipe(action);
+        await _handleAdjustRecipe(action);
+        break;
+      case MessieActionType.editRecipeSteps:
+        await _handleEditRecipeSteps(action);
         break;
       case MessieActionType.addToShopping:
         await _handleAddToShopping(action);
@@ -197,16 +325,15 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
     final steps = stepsList.map((s) => s.toString()).toList();
 
     // Create a temporary Recipe object
-    // Use a unique ID prefixed with 'generated_'
     final generatedRecipe = Recipe(
       id: 'generated_${DateTime.now().millisecondsSinceEpoch}',
       name: name,
-      imageUrl: '', // No image for generated recipe
-      category: 'main', // Default to main
-      cuisine: 'other', // Default
+      imageUrl: '',
+      category: 'main',
+      cuisine: 'other',
       timeMinutes: timeMinutes,
-      costYen: 0, // Unknown
-      difficulty: 2, // Medium default
+      costYen: 0,
+      difficulty: 2,
       seasons: [],
       ingredients: ingredients,
       steps: steps,
@@ -214,8 +341,24 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
       createdAt: DateTime.now(),
     );
 
+    // 生成されたレシピもカスタマイズ済みレシピとして保存
+    final user = _ref.read(authStateProvider).value;
+    String? customizedId;
+
+    if (user != null) {
+      try {
+        final customizedRepo = _ref.read(customizedRecipeRepositoryProvider);
+        final customized = await customizedRepo.initializeTodaysRecipe(
+          user.uid,
+          generatedRecipe,
+        );
+        customizedId = customized.id;
+      } catch (_) {}
+    }
+
     state = state.copyWith(
       currentSuggestion: generatedRecipe,
+      customizedRecipeId: customizedId,
       recipeAdjustments: null,
     );
   }
@@ -230,15 +373,31 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
 
     final newRecipe = recipes.where((r) => r.id == recipeId).firstOrNull;
     if (newRecipe != null) {
+      // 新しいレシピでカスタマイズ済みレシピを初期化
+      final user = _ref.read(authStateProvider).value;
+      String? customizedId;
+
+      if (user != null) {
+        try {
+          final customizedRepo = _ref.read(customizedRecipeRepositoryProvider);
+          final customized = await customizedRepo.initializeTodaysRecipe(
+            user.uid,
+            newRecipe,
+          );
+          customizedId = customized.id;
+        } catch (_) {}
+      }
+
       state = state.copyWith(
         currentSuggestion: newRecipe,
+        customizedRecipeId: customizedId,
         recipeAdjustments: null,
       );
     }
   }
 
   /// レシピ調整
-  void _handleAdjustRecipe(MessieAction action) {
+  Future<void> _handleAdjustRecipe(MessieAction action) async {
     final adjustmentsData = action.data['adjustments'] as List<dynamic>?;
     if (adjustmentsData == null) return;
 
@@ -246,6 +405,7 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
     if (currentRecipe == null) return;
 
     List<Ingredient> newIngredients = List.from(currentRecipe.ingredients);
+    List<String> adjustmentDescriptions = [];
 
     final adjustments =
         adjustmentsData
@@ -267,6 +427,9 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
                   }
                   return i;
                 }).toList();
+            adjustmentDescriptions.add(
+              '分量を${adjustment.scale}倍に調整',
+            );
           }
           break;
         case 'substitute':
@@ -278,23 +441,93 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
                   }
                   return i;
                 }).toList();
+            adjustmentDescriptions.add(
+              '${adjustment.target}を${adjustment.replacement}に変更',
+            );
           }
           break;
         case 'remove':
           newIngredients.removeWhere((i) => i.name.contains(adjustment.target));
+          adjustmentDescriptions.add('${adjustment.target}を削除');
           break;
       }
     }
 
+    // レシピ名に「(調整済み)」を付ける（まだ付いていなければ）
+    String adjustedName = currentRecipe.name;
+    if (!adjustedName.contains('(調整済み)')) {
+      adjustedName = '$adjustedName (調整済み)';
+    }
+
     final adjustedRecipe = currentRecipe.copyWith(
       ingredients: newIngredients,
-      name: '${currentRecipe.name} (調整済み)',
+      name: adjustedName,
     );
+
+    // Firebaseに保存
+    final user = _ref.read(authStateProvider).value;
+    if (user != null && state.customizedRecipeId != null) {
+      try {
+        final customizedRepo = _ref.read(customizedRecipeRepositoryProvider);
+        await customizedRepo.updateRecipe(
+          user.uid,
+          state.customizedRecipeId!,
+          adjustedRecipe,
+          RecipeAdjustmentLog(
+            type: adjustments.map((a) => a.type).join(', '),
+            description: adjustmentDescriptions.join(', '),
+            timestamp: DateTime.now(),
+          ),
+        );
+      } catch (_) {}
+    }
 
     state = state.copyWith(
       currentSuggestion: adjustedRecipe,
       recipeAdjustments: {'adjustments': adjustmentsData},
     );
+  }
+
+  /// レシピの手順を編集
+  Future<void> _handleEditRecipeSteps(MessieAction action) async {
+    final newSteps = action.data['steps'] as List<dynamic>?;
+    if (newSteps == null) return;
+
+    final currentRecipe = state.currentSuggestion;
+    if (currentRecipe == null) return;
+
+    final steps = newSteps.map((s) => s.toString()).toList();
+
+    // レシピ名に「(調整済み)」を付ける（まだ付いていなければ）
+    String adjustedName = currentRecipe.name;
+    if (!adjustedName.contains('(調整済み)')) {
+      adjustedName = '$adjustedName (調整済み)';
+    }
+
+    final adjustedRecipe = currentRecipe.copyWith(
+      steps: steps,
+      name: adjustedName,
+    );
+
+    // Firebaseに保存
+    final user = _ref.read(authStateProvider).value;
+    if (user != null && state.customizedRecipeId != null) {
+      try {
+        final customizedRepo = _ref.read(customizedRecipeRepositoryProvider);
+        await customizedRepo.updateRecipe(
+          user.uid,
+          state.customizedRecipeId!,
+          adjustedRecipe,
+          RecipeAdjustmentLog(
+            type: 'edit_steps',
+            description: '手順を編集',
+            timestamp: DateTime.now(),
+          ),
+        );
+      } catch (_) {}
+    }
+
+    state = state.copyWith(currentSuggestion: adjustedRecipe);
   }
 
   /// 冷蔵庫状況を更新
@@ -311,7 +544,7 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
     for (final update in updates) {
       final map = update as Map<String, dynamic>;
       final ingredientName = map['ingredient'] as String?;
-      final status = map['status'] as String?; // has, none, etc
+      final status = map['status'] as String?;
 
       if (ingredientName == null || status == null) continue;
 
@@ -323,7 +556,7 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
       } else if (status == 'little' || status == '少し') {
         estimatedAmount = '少し';
       } else {
-        estimatedAmount = 'ある'; // Default
+        estimatedAmount = 'ある';
       }
 
       final existingItem =
@@ -337,7 +570,7 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
             user.uid,
             existingItem.copyWith(
               estimatedAmount: 'なし',
-              lastUsed: DateTime.now(), // Mark as used up
+              lastUsed: DateTime.now(),
             ),
           );
         }
@@ -357,7 +590,7 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
           await pantryRepo.addItem(
             user.uid,
             PantryItem(
-              id: '', // Generated
+              id: '',
               ingredientName: ingredientName,
               estimatedAmount: estimatedAmount,
               lastPurchased: DateTime.now(),
@@ -423,8 +656,26 @@ class MessieAgentNotifier extends StateNotifier<MessieAgentState> {
     final recipes = await _ref.read(recipeRepositoryProvider).getAllRecipes();
     if (recipes.isNotEmpty) {
       recipes.shuffle();
+      final newRecipe = recipes.first;
+
+      // 新しいレシピでカスタマイズ済みレシピを初期化
+      final user = _ref.read(authStateProvider).value;
+      String? customizedId;
+
+      if (user != null) {
+        try {
+          final customizedRepo = _ref.read(customizedRecipeRepositoryProvider);
+          final customized = await customizedRepo.initializeTodaysRecipe(
+            user.uid,
+            newRecipe,
+          );
+          customizedId = customized.id;
+        } catch (_) {}
+      }
+
       state = state.copyWith(
-        currentSuggestion: recipes.first,
+        currentSuggestion: newRecipe,
+        customizedRecipeId: customizedId,
         recipeAdjustments: null,
       );
     }

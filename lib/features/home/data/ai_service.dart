@@ -6,7 +6,7 @@ import 'package:cheat_days/features/pantry/domain/pantry_item.dart';
 import 'package:cheat_days/features/records/domain/meal_record.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
 import 'package:cheat_days/features/shopping_list/domain/shopping_item.dart';
-import 'package:firebase_vertexai/firebase_vertexai.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final aiServiceProvider = Provider<AiService>((ref) {
@@ -38,11 +38,11 @@ class AiService {
   late final GenerativeModel _textModel; // For plain text responses
 
   AiService() {
-    _model = FirebaseVertexAI.instance.generativeModel(
+    _model = FirebaseAI.vertexAI(location: 'global').generativeModel(
       model: 'gemini-2.5-flash',
       generationConfig: GenerationConfig(responseMimeType: 'application/json'),
     );
-    _textModel = FirebaseVertexAI.instance.generativeModel(
+    _textModel = FirebaseAI.vertexAI(location: 'global').generativeModel(
       model: 'gemini-2.5-flash',
       // No JSON constraint - returns plain text
     );

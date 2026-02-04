@@ -4,7 +4,7 @@ import 'package:cheat_days/features/agent/domain/messie_action.dart';
 import 'package:cheat_days/features/auth/domain/user_settings.dart';
 import 'package:cheat_days/features/context/domain/user_context.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
-import 'package:firebase_vertexai/firebase_vertexai.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final messieAgentServiceProvider = Provider<MessieAgentService>((ref) {
@@ -17,7 +17,7 @@ class MessieAgentService {
   late final GenerativeModel _model;
 
   MessieAgentService() {
-    _model = FirebaseVertexAI.instance.generativeModel(
+    _model = FirebaseAI.vertexAI(location: 'global').generativeModel(
       model: 'gemini-2.5-flash',
       generationConfig: GenerationConfig(responseMimeType: 'application/json'),
     );
@@ -89,7 +89,9 @@ class MessieAgentService {
 - 名前: ${currentSuggestion.name}
 - カテゴリ: ${currentSuggestion.category}
 - 調理時間: ${currentSuggestion.timeMinutes}分
-- 材料: ${currentSuggestion.ingredients.map((i) => i.name).join(', ')}
+- 材料: ${currentSuggestion.ingredients.map((i) => '${i.name}(${i.amount}${i.unit})').join(', ')}
+- 手順:
+${currentSuggestion.steps.asMap().entries.map((e) => '  ${e.key + 1}. ${e.value}').join('\n')}
 '''
             : '提案レシピなし';
 
@@ -194,12 +196,25 @@ data: {
 
 ### update_fridge
 冷蔵庫の食材情報を更新
-data: { 
+data: {
   "updates": [
     { "ingredient": "玉ねぎ", "status": "has" },
     { "ingredient": "牛乳", "status": "none" }
   ]
 }
+
+### edit_recipe_steps
+レシピの調理手順を編集（ユーザーの要望に合わせて手順を変更）
+data: {
+  "steps": [
+    "下ごしらえ：鶏肉は一口大に切り、塩コショウをふる",
+    "フライパンに油を熱し、鶏肉を焼く",
+    "野菜を加えて炒め合わせる",
+    "調味料を加えて完成"
+  ],
+  "reason": "時短のため手順を簡略化"
+}
+**重要**: ユーザーが「もっと簡単にして」「時短で」「詳しく教えて」などと言った場合に使用
 
 ## 出力形式（JSON）
 {
@@ -255,6 +270,9 @@ data: {
                 break;
               case 'adjust_recipe':
                 actionType = MessieActionType.adjustRecipe;
+                break;
+              case 'edit_recipe_steps':
+                actionType = MessieActionType.editRecipeSteps;
                 break;
               case 'add_to_shopping':
                 actionType = MessieActionType.addToShopping;

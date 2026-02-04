@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:cheat_days/features/admin/data/admin_ai_service.dart';
 import 'package:cheat_days/features/admin/presentation/recipe_editor_screen.dart';
+import 'package:cheat_days/features/admin/presentation/ai_recipe_generator_screen.dart';
 import 'package:cheat_days/features/recipes/data/recipe_repository.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,6 +25,19 @@ class AdminDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text("Messie Admin Dashboard"),
         actions: [
+          // AI Recipe Generator button
+          IconButton(
+            icon: const Icon(Icons.auto_awesome),
+            tooltip: 'AI レシピ一括生成',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AiRecipeGeneratorScreen(),
+                ),
+              );
+            },
+          ),
           // Bulk JSON Import button
           IconButton(
             icon: const Icon(Icons.upload_file),
@@ -33,6 +48,7 @@ class AdminDashboardScreen extends ConsumerWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
+              if (!context.mounted) return;
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const AdminLoginScreen()),
@@ -240,16 +256,105 @@ final recipeListProvider = FutureProvider<List<Recipe>>((ref) async {
   return repo.getAllRecipes();
 });
 
-class _RecipeDataTable extends StatefulWidget {
+class _RecipeDataTable extends ConsumerStatefulWidget {
   final List<Recipe> recipes;
   const _RecipeDataTable({required this.recipes});
 
   @override
-  State<_RecipeDataTable> createState() => _RecipeDataTableState();
+  ConsumerState<_RecipeDataTable> createState() => _RecipeDataTableState();
 }
 
-class _RecipeDataTableState extends State<_RecipeDataTable> {
+class _RecipeDataTableState extends ConsumerState<_RecipeDataTable> {
   String _filter = 'all'; // all, has_image, no_image
+  final Set<String> _generatingImages = {};
+
+  Future<void> _generateImageForRecipe(Recipe recipe) async {
+    if (_generatingImages.contains(recipe.id)) return;
+
+    setState(() => _generatingImages.add(recipe.id));
+
+    try {
+      final service = ref.read(adminAiServiceProvider);
+
+      // 画像生成
+      final imageBytes = await service.generateRecipeImage(recipe.name);
+      if (imageBytes == null) {
+        throw Exception('画像生成に失敗しました');
+      }
+
+      // アップロード
+      final imageUrl = await service.uploadImage(imageBytes, recipe.name);
+
+      // レシピを更新
+      final updatedRecipe = recipe.copyWith(imageUrl: imageUrl);
+      await ref.read(recipeRepositoryProvider).saveRecipe(updatedRecipe);
+
+      // リストを更新
+      ref.invalidate(recipeListProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('「${recipe.name}」の画像を生成しました')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('エラー: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _generatingImages.remove(recipe.id));
+      }
+    }
+  }
+
+  Future<void> _bulkGenerateImages() async {
+    final recipesWithoutImages =
+        widget.recipes.where((r) => r.imageUrl.isEmpty).toList();
+
+    if (recipesWithoutImages.isEmpty) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('一括画像生成'),
+        content: Text(
+          '${recipesWithoutImages.length}件のレシピに画像を生成します。\n'
+          '処理には時間がかかる場合があります。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('キャンセル'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('開始'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    for (final recipe in recipesWithoutImages) {
+      if (!mounted) break;
+      await _generateImageForRecipe(recipe);
+      // レート制限対策
+      await Future.delayed(const Duration(seconds: 2));
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('一括画像生成が完了しました')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -283,7 +388,9 @@ class _RecipeDataTableState extends State<_RecipeDataTable> {
                 ),
                 const SizedBox(width: 8),
                 FilterChip(
-                  label: const Text("No Image 🖼️❌"),
+                  label: Text(
+                    "No Image 🖼️❌ (${widget.recipes.where((r) => r.imageUrl.isEmpty).length})",
+                  ),
                   selected: _filter == 'no_image',
                   backgroundColor: Colors.red[50],
                   selectedColor: Colors.red[100],
@@ -295,6 +402,29 @@ class _RecipeDataTableState extends State<_RecipeDataTable> {
                   selected: _filter == 'has_image',
                   onSelected: (b) => setState(() => _filter = 'has_image'),
                 ),
+                const SizedBox(width: 16),
+                if (widget.recipes.any((r) => r.imageUrl.isEmpty))
+                  ElevatedButton.icon(
+                    onPressed: _generatingImages.isNotEmpty
+                        ? null
+                        : () => _bulkGenerateImages(),
+                    icon: _generatingImages.isNotEmpty
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.auto_awesome),
+                    label: Text(
+                      _generatingImages.isNotEmpty
+                          ? '生成中... (${_generatingImages.length})'
+                          : '画像なし全て生成',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -358,29 +488,52 @@ class _RecipeDataTableState extends State<_RecipeDataTable> {
                             DataCell(Text(recipe.category)),
                             DataCell(
                               recipe.imageUrl.isEmpty
-                                  ? IconButton(
-                                    icon: const Icon(
-                                      Icons.copy,
-                                      color: Colors.blue,
-                                    ),
-                                    tooltip: "Copy Generation Prompt",
-                                    onPressed: () {
-                                      final prompt =
-                                          "次の料理の画像をイラスト風に生成してください。指定以外のメニューは描かず。美味しそうに。\n${recipe.name}";
-                                      Clipboard.setData(
-                                        ClipboardData(text: prompt),
-                                      );
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            "Prompt copied to clipboard!",
+                                  ? Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (_generatingImages.contains(recipe.id))
+                                          const SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        else
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.auto_awesome,
+                                              color: Colors.deepPurple,
+                                            ),
+                                            tooltip: "AI画像生成",
+                                            onPressed: () =>
+                                                _generateImageForRecipe(recipe),
                                           ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.copy,
+                                            color: Colors.blue,
+                                          ),
+                                          tooltip: "Copy Generation Prompt",
+                                          onPressed: () {
+                                            final prompt =
+                                                "次の料理の画像をイラスト風に生成してください。指定以外のメニューは描かず。美味しそうに。\n${recipe.name}";
+                                            Clipboard.setData(
+                                              ClipboardData(text: prompt),
+                                            );
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "Prompt copied to clipboard!",
+                                                ),
+                                              ),
+                                            );
+                                          },
                                         ),
-                                      );
-                                    },
-                                  )
+                                      ],
+                                    )
                                   : const SizedBox(),
                             ),
                           ],
