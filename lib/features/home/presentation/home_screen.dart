@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cheat_days/core/constants/app_constants.dart';
 import 'package:cheat_days/features/agent/domain/messie_action.dart';
 import 'package:cheat_days/features/agent/presentation/messie_agent_provider.dart';
+import 'package:cheat_days/features/home/presentation/inline_prompts.dart';
 import 'package:cheat_days/features/recipes/domain/recipe.dart';
 import 'package:cheat_days/features/recipes/domain/menu_slot.dart';
 import 'package:cheat_days/features/recipes/presentation/daily_suggestion_provider.dart';
@@ -426,6 +427,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               SliverList(
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 12),
+
+                  // Inline prompts (non-blocking)
+                  const InlinePromptCards(),
 
                   // Menu Carousel with PageView
                   if (displaySlots.isNotEmpty) ...[

@@ -1,9 +1,7 @@
 import 'package:cheat_days/core/theme/app_theme.dart';
 import 'package:cheat_days/features/auth/data/user_repository.dart';
 import 'package:cheat_days/features/auth/repository/auth_repository.dart';
-import 'package:cheat_days/features/context/presentation/fridge_check_dialog.dart';
 import 'package:cheat_days/features/home/presentation/home_screen.dart';
-import 'package:cheat_days/features/home/presentation/yesterday_check_dialog.dart';
 import 'package:cheat_days/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:cheat_days/features/records/presentation/records_screen.dart';
 import 'package:cheat_days/firebase_options.dart';
@@ -102,7 +100,7 @@ class OnboardingChecker extends ConsumerWidget {
   }
 }
 
-/// Main scaffold that also checks for yesterday's meal on first load
+/// Main scaffold wrapper - dialogs removed, prompts shown inline in HomeScreen
 class MainScaffoldWithCheck extends ConsumerStatefulWidget {
   const MainScaffoldWithCheck({super.key});
 
@@ -112,59 +110,16 @@ class MainScaffoldWithCheck extends ConsumerStatefulWidget {
 }
 
 class _MainScaffoldWithCheckState extends ConsumerState<MainScaffoldWithCheck> {
-  bool _hasCheckedYesterday = false;
-  bool _hasCheckedFridge = false;
-
   @override
   void initState() {
     super.initState();
-    // Schedule the check after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _runStartupChecks();
-    });
-  }
-
-  Future<void> _runStartupChecks() async {
-    await _checkYesterdayMeal();
-    await _checkFridgeStatus();
-
-    // Update last access time
-    final user = ref.read(authRepositoryProvider).currentUser;
-    if (user != null) {
-      ref.read(authRepositoryProvider).updateLastAccess(user.uid);
-    }
-  }
-
-  Future<void> _checkYesterdayMeal() async {
-    if (_hasCheckedYesterday) return;
-    _hasCheckedYesterday = true;
-
-    final shouldShow = await shouldShowYesterdayCheck(ref);
-    if (shouldShow && mounted) {
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => const YesterdayCheckDialog(),
-      );
-    }
-  }
-
-  Future<void> _checkFridgeStatus() async {
-    if (_hasCheckedFridge) return;
-    _hasCheckedFridge = true;
-
-    try {
-      final settings = await ref.read(userSettingsProvider.future);
-      if (FridgeCheckDialog.needsCheck(settings) && mounted) {
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => const FridgeCheckDialog(),
-        );
+      // Update last access time only
+      final user = ref.read(authRepositoryProvider).currentUser;
+      if (user != null) {
+        ref.read(authRepositoryProvider).updateLastAccess(user.uid);
       }
-    } catch (e) {
-      // Ignore errors - fridge check is not critical
-    }
+    });
   }
 
   @override

@@ -7,17 +7,17 @@ import 'package:cheat_days/features/pantry/domain/pantry_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// 週次冷蔵庫確認ダイアログ
-/// 1週間に1回、ユーザーに冷蔵庫の中身を確認してもらう
+/// 冷蔵庫確認ダイアログ
+/// 2週間に1回、ユーザーに冷蔵庫の中身を確認してもらう
 class FridgeCheckDialog extends ConsumerStatefulWidget {
   const FridgeCheckDialog({super.key});
 
-  /// 冷蔵庫確認が必要か判定（最終確認から7日以上経過）
+  /// 冷蔵庫確認が必要か判定（最終確認から14日以上経過）
   static bool needsCheck(UserSettings settings) {
     if (settings.lastFridgeCheckAt == null) return true;
     final daysSinceCheck =
         DateTime.now().difference(settings.lastFridgeCheckAt!).inDays;
-    return daysSinceCheck >= 7;
+    return daysSinceCheck >= 14;
   }
 
   @override
